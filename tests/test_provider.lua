@@ -54,7 +54,8 @@ local function client(locale, missing, occupied)
     for _, font in ipairs(catalog.fonts) do
         local expected
         if occupied then expected = "Interface\\AddOns\\OtherFonts\\" .. font.file
-        elseif not missing and font[fields[locale]] then expected = font.path end
+        elseif not missing and (font[fields[locale] or "latin"]
+            or (font.latinLocales and font.latinLocales[locale])) then expected = font.path end
         check(paths[font.name] == expected, "actual LSM locale/existence/ownership: " .. locale .. "/" .. font.name)
     end
     check(media:GetDefault("font") == previousDefault, "provider does not change the media default")
@@ -64,7 +65,7 @@ local function client(locale, missing, occupied)
 end
 
 for _, flavor in ipairs({ "retail", "forever" }) do
-    for _, locale in ipairs({ "enUS", "ruRU", "zhCN", "zhTW", "koKR" }) do
+    for _, locale in ipairs({ "enUS", "deDE", "frFR", "ptBR", "ruRU", "zhCN", "zhTW", "koKR" }) do
         client(locale, false, false)
         client(locale, false, true)
         client(locale, true, false)
