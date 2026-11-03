@@ -12,3 +12,4 @@ baseline/licenses/*.txt text eol=lf whitespace=-blank-at-eol,-blank-at-eof
 fonts/licenses/*.txt text eol=lf whitespace=-blank-at-eol,-blank-at-eof
 LICENSE text eol=lf
 libs/LibStub/LibStub.lua whitespace=-blank-at-eol
+libs/CallbackHandler-1.0/CallbackHandler-1.0.lua whitespace=-blank-at-eof
