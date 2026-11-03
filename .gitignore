@@ -1,0 +1,7 @@
+AGENTS.md
+CLAUDE.md
+.venv/
+__pycache__/
+.build/
+.release/
+*.zip

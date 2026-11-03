@@ -1,0 +1,10 @@
+* text=auto
+*.lua text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.ttf binary
+*.otf binary
+# Pinned upstream notices retain their original trailing whitespace.
+baseline/licenses/*.txt text eol=lf whitespace=-blank-at-eol,-blank-at-eof

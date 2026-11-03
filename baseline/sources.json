@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "derivativeName": "Antrakt UI Sans",
+  "derivativeLicense": "OFL-1.1",
+  "retainedOriginalDroidLicense": "Apache-2.0",
+  "materials": [
+    {
+      "path": "sources/NotoSans-Regular.ttf",
+      "sha256": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+      "revision": "ffebf8c1ee449e544955a7e813c54f9b73848eac",
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "sources/DroidSansFallbackLegacy.ttf",
+      "sha256": "82a74d0ef369ec7979172023cfff87f04f0a617a2871c39ef6aeb0f399c5cdaf",
+      "source": "https://android.googlesource.com/platform/frameworks/base/+/1aed5ea2dcf7cb0bf35635f378b2326461ba0df0/data/fonts/DroidSansFallbackLegacy.ttf",
+      "revision": "1aed5ea2dcf7cb0bf35635f378b2326461ba0df0",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "licenses/NotoSans-OFL.txt",
+      "sha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+      "source": "https://raw.githubusercontent.com/notofonts/noto-fonts/ffebf8c1ee449e544955a7e813c54f9b73848eac/LICENSE",
+      "revision": "ffebf8c1ee449e544955a7e813c54f9b73848eac",
+      "license": "OFL-1.1"
+    },
+    {
+      "path": "licenses/Droid-NOTICE.txt",
+      "sha256": "38751245389e1e23f73e6f5384b5cbe7fa972cc4410c5adc9c04b082a0b9561a",
+      "source": "https://android.googlesource.com/platform/frameworks/base/+/1aed5ea2dcf7cb0bf35635f378b2326461ba0df0/data/fonts/NOTICE",
+      "revision": "1aed5ea2dcf7cb0bf35635f378b2326461ba0df0",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "licenses/Droid-README.txt",
+      "sha256": "c8b88077052fed912b3f724c0ed230c501cf4e18833af7ca44338d3cd0b093e2",
+      "source": "https://android.googlesource.com/platform/frameworks/base/+/1aed5ea2dcf7cb0bf35635f378b2326461ba0df0/data/fonts/README.txt",
+      "revision": "1aed5ea2dcf7cb0bf35635f378b2326461ba0df0",
+      "license": "Apache-2.0"
+    },
+    {
+      "path": "licenses/Apache-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "revision": "Apache-2.0",
+      "license": "Apache-2.0"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "family": "Antrakt UI Sans",
+  "recipeSha256": "6424e5e8a4bb9db45497d93a6453267af5c00ae68162263721e1922a6a3c4f82",
+  "fonttools": "4.68.0",
+  "sha256": "37190dfd4749516601d23e846f7cbc20243d5791da2b1fda6b3b6a301e94a4d4",
+  "bytes": 3729440,
+  "fontOnlyZipBytes": 1910655,
+  "codepoints": 32092,
+  "glyphs": 47008,
+  "modernHangulSyllables": 11172,
+  "hanU4E00U9FFF": 16504,
+  "hhea": {
+    "ascent": 1069,
+    "descent": -293,
+    "lineGap": 0
+  },
+  "typo": {
+    "sTypoAscender": 1069,
+    "sTypoDescender": -293,
+    "sTypoLineGap": 63
+  },
+  "fsType": 0,
+  "nativeAcceptance": "required"
+}
