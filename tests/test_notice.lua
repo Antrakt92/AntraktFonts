@@ -293,4 +293,95 @@ do
     check(not item.confirm() and item.writes == 0, "missing cleanup cannot acknowledge failed display")
 end
 
+-- Manual information uses the same presentation ownership and real acknowledgement.
+for _, state in ipairs({ "pending", "fresh", "acknowledged" }) do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local item = participant(state ~= "pending" and state or nil)
+    coordinator:Register("A", item:callbacks())
+    check(type(coordinator.RequestInfo) == "function", "manual API is available")
+    check(not coordinator:RequestInfo("missing") and not coordinator:RequestInfo(string.rep("a", 129)), "manual owner must be registered and bounded")
+    check(coordinator:RequestInfo("A") and item.shows == 1, "manual request opens any saved state: " .. state)
+    check(item.writes == 0, "opening information never acknowledges: " .. state)
+    check(item.suspend() and item.writes == 0, "generic hide never acknowledges manual information")
+    item.ready = false
+    check(not coordinator:RequestInfo("A"), "manual request respects combat/readiness")
+    item.ready = true
+    check(coordinator:RequestInfo("A") and item.confirm(), "manual explicit confirmation succeeds")
+    check(item.state == "acknowledged" and item.writes == (state == "acknowledged" and 0 or 1), "manual confirmation persists only necessary owner")
+    check(not coordinator:RequestShow(), "manual acknowledgement suppresses automatic transition")
+end
+
+do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local fresh, peer = participant("fresh"), participant()
+    fresh.durable = false
+    coordinator:Register("A", fresh:callbacks())
+    check(coordinator:RequestInfo("A") and fresh.confirm(), "fresh explicit read seeds session even if own persistence fails")
+    check(fresh.state == "fresh" and fresh.writes == 1, "failed save never fabricates durable fresh acknowledgement")
+    coordinator:Register("B", peer:callbacks())
+    check(peer.state == "acknowledged" and fresh.writes == 2, "late pending owner receives real acknowledgement and failed own save retries")
+    fresh.durable = true
+    coordinator:Register("A", fresh:callbacks())
+    check(fresh.state == "acknowledged" and fresh.writes == 3, "manual fresh save intent survives re-registration")
+end
+
+do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local a, b = participant(), participant("fresh")
+    coordinator:Register("A", a:callbacks()); coordinator:Register("B", b:callbacks())
+    coordinator:RequestShow()
+    local busy, owner = coordinator:RequestInfo("B")
+    check(busy and owner == "A" and b.shows == 0, "manual info never overlaps another active host")
+    a.suspend()
+    local callbacks = b:callbacks()
+    callbacks.show = function(confirm, suspend)
+        b.confirm, b.suspend, b.visible = confirm, suspend, true
+        error("partial manual display")
+    end
+    coordinator:Register("B", callbacks)
+    check(not coordinator:RequestInfo("B") and not b.visible and b.writes == 0, "failed manual show cleans partial UI without acknowledgement")
+    check(not b.confirm(), "failed manual display confirmation is stale")
+end
+
+do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local fresh, late = participant("fresh"), participant()
+    coordinator:Register("A", fresh:callbacks()); coordinator:RequestInfo("A")
+    coordinator:Register("B", late:callbacks())
+    check(fresh.writes == 0 and late.writes == 0, "opening fresh manual info never seeds a late pending owner")
+    fresh.suspend(); coordinator:RequestShow()
+    check(late.shows == 1, "pending peer still receives automatic transition after unread fresh info")
+end
+
+for _, mode in ipairs({ "false", "throw" }) do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local item = participant("fresh")
+    item.dismissError = true
+    local callbacks = item:callbacks()
+    callbacks.show = function(confirm, suspend)
+        item.confirm, item.suspend, item.visible = confirm, suspend, true
+        confirm()
+        if mode == "throw" then error("partial manual failure") end
+        return false
+    end
+    coordinator:Register("A", callbacks)
+    local busy, owner = coordinator:RequestInfo("A")
+    check(busy and owner == "A" and item.writes == 0, "manual failed cleanup retains busy ownership without early acknowledgement: " .. mode)
+    check(not item.confirm(), "failed manual cleanup invalidates explicit callback: " .. mode)
+    item.visible = false; check(item.suspend(), "manual host releases failed cleanup after hiding: " .. mode)
+end
+
+do
+    local incomplete = { formatMajor = 1, campaign = "shared-fonts-move-v1", Register = function() end, RequestShow = function() end }
+    local env, load = environment(incomplete)
+    local coordinator = load().GetCoordinator()
+    check(coordinator ~= incomplete and env.AntraktFontNoticeCoordinator == incomplete
+        and type(coordinator.RequestInfo) == "function", "incomplete same-major protocol isolates without overwrite")
+end
+
 print("Notice coordinator: " .. checks .. " checks passed")

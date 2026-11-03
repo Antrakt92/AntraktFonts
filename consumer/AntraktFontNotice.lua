@@ -4,6 +4,7 @@
 -- Visible hosts must supply programmatic dismiss/hide/cleanup; it must not ack.
 -- Absent/throwing dismiss fails closed: ownership stays busy until host suspension.
 -- RequestShow returns (shownOrBusy, owner), or false when deferred/acknowledged.
+-- RequestInfo(owner) explicitly opens the registered host regardless of saved campaign state.
 -- Host OnHide may suspend ownership; only explicit actions may acknowledge.
 local _, namespace = ...
 local module = { formatMajor = 1, campaign = "shared-fonts-move-v1" }
@@ -27,6 +28,7 @@ local function createCoordinator()
     local coordinator = { formatMajor = 1, campaign = module.campaign }
     local participants = {}
     local acknowledged = false
+    local manualAcknowledged = {}
     local active
     local generation = 0
     local dispatching = false
@@ -65,7 +67,8 @@ local function createCoordinator()
         acknowledging = true
         for _, owner in ipairs(owners()) do
             local entry = participants[owner]
-            if entry.state == nil and callTrue(entry.acknowledge) then
+            if (entry.state == nil or (entry.state == "fresh" and manualAcknowledged[owner]))
+                and callTrue(entry.acknowledge) then
                 -- A replaced registration must confirm its own current data.
                 if participants[owner] == entry then entry.state = "acknowledged" end
             end
@@ -76,11 +79,12 @@ local function createCoordinator()
     local function confirm(token)
         if active ~= token or token.generation ~= generation then return false end
         local entry = participants[token.owner]
-        if not entry or entry.state ~= nil then return false end
+        if entry ~= token.entry or (not token.manual and entry.state ~= nil) then return false end
         if token.opening then
             token.confirmPending = true
             return true
         end
+        if token.manual and entry.state == "fresh" then manualAcknowledged[token.owner] = true end
         acknowledged = true
         release(token)
         persistAcknowledgement()
@@ -108,6 +112,37 @@ local function createCoordinator()
         return true
     end
 
+    local function present(owner, entry, manual)
+        generation = generation + 1
+        local token = { owner = owner, entry = entry, generation = generation, opening = true, manual = manual }
+        active = token
+        local shown = callTrue(entry.show,
+            function() return confirm(token) end,
+            function() return release(token) end)
+        if active == token then
+            token.opening = false
+            if shown then
+                if token.confirmPending then confirm(token) end
+                return true, owner
+            end
+            dismissPresentation()
+            if active then return true, active.owner end
+        end
+        return false
+    end
+
+    function coordinator:RequestInfo(owner)
+        if type(owner) ~= "string" or owner == "" or #owner > 128 or not participants[owner] then return false end
+        if dispatching or acknowledging or dismissing then return false end
+        if active then return true, active.owner end
+        local entry = participants[owner]
+        dispatching = true
+        local shown, host = false, nil
+        if callTrue(entry.canShow) then shown, host = present(owner, entry, true) end
+        dispatching = false
+        return shown, host
+    end
+
     function coordinator:RequestShow()
         if dispatching or acknowledging or dismissing then return false end
         dispatching = true
@@ -117,22 +152,8 @@ local function createCoordinator()
         for _, owner in ipairs(owners()) do
             local entry = participants[owner]
             if entry.state == nil and callTrue(entry.canShow) then
-                generation = generation + 1
-                local token = { owner = owner, entry = entry, generation = generation, opening = true }
-                active = token
-                local shown = callTrue(entry.show,
-                    function() return confirm(token) end,
-                    function() return release(token) end)
-                if active == token then
-                    token.opening = false
-                    if shown then
-                        if token.confirmPending then confirm(token) end
-                        dispatching = false
-                        return true, owner
-                    end
-                    dismissPresentation()
-                    if active then dispatching = false; return true, active.owner end
-                end
+                local shown, host = present(owner, entry, false)
+                if shown then dispatching = false; return true, host end
                 -- A real acknowledgement can arrive through a late registration.
                 if acknowledged then dispatching = false; return false end
             end
@@ -156,6 +177,7 @@ function module.GetCoordinator()
             and rawget(shared, "campaign") == module.campaign
             and type(rawget(shared, "Register")) == "function"
             and type(rawget(shared, "RequestShow")) == "function"
+            and type(rawget(shared, "RequestInfo")) == "function"
     end)
     if ok and cleanTrue(compatible) then return shared end
     if not isolated then isolated = createCoordinator() end
