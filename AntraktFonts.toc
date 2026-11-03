@@ -1,0 +1,13 @@
+## Interface: 120105
+## Title: Antrakt Fonts
+## Notes: Optional shared font collection for addons using LibSharedMedia.
+## Author: Antrakt
+## Version: @project-version@
+## X-License: Custom (see LICENSE); third-party fonts and libraries retain their licenses.
+## X-AntraktFonts-Flavor: retail
+
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+libs\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
+AntraktFonts_Catalog.lua
+AntraktFonts.lua

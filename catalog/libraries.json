@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "libraries": [
+    {
+      "Path": "libs/LibStub/LibStub.lua",
+      "Project": "LibStub",
+      "Source": "https://repos.curseforge.com/wow/libstub/!svn/rvr/103/trunk/LibStub.lua",
+      "SourceRevision": "r103",
+      "SourceArtifact": "",
+      "SourceArtifactSha256": "",
+      "RuntimeSha256": "43C1355A2BED1C426BD33ABB53B8ABD0A7C6E9B3E295A73FA98BEE73CE2CCC50",
+      "License": "Public Domain",
+      "LicenseFile": "",
+      "LicenseTextSource": "",
+      "LicenseTextSha256": "",
+      "LicenseDeclarationSource": "",
+      "LicenseDeclarationSha256": "",
+      "CopyrightNoticeSource": "",
+      "CopyrightNoticeSha256": "",
+      "LicenseTemplateSource": "",
+      "LicenseTemplateSha256": ""
+    },
+    {
+      "Path": "libs/CallbackHandler-1.0/CallbackHandler-1.0.lua",
+      "Project": "CallbackHandler-1.0",
+      "Source": "https://www.curseforge.com/wow/addons/callbackhandler/files/4167614",
+      "SourceRevision": "r26",
+      "SourceArtifact": "CallbackHandler-1.0-1.0.9.zip",
+      "SourceArtifactSha256": "75B11A307243D2DBBC80D9D4EB83A7824B4179A097470A98F4CD460C07E0299D",
+      "RuntimeSha256": "84A15AF505E728AC5E5EB6A8EABA8989D1131D5F8BA14D11ABCFE4CE086DE3C1",
+      "License": "BSD-2-Clause",
+      "LicenseFile": "LICENSES/CallbackHandler-1.0-BSD-2-Clause.txt",
+      "LicenseTextSource": "",
+      "LicenseTextSha256": "BB630CB510B8EBAFC0F04C82A2BA1D21BB13598DB5B45C890185E71E96E5D933",
+      "LicenseDeclarationSource": "https://repos.curseforge.com/wow/callbackhandler/!svn/rvr/26/trunk/CallbackHandler-1.0.toc",
+      "LicenseDeclarationSha256": "7350135554CAE47520754A72C4F076555ECC279F51A4EE0F1E16DABF7E1119E2",
+      "CopyrightNoticeSource": "https://raw.githubusercontent.com/WoWUIDev/Ace3/9f61bbab1cf384488251fd85b2e9c1e2081b42a2/LICENSE.txt",
+      "CopyrightNoticeSha256": "6096327FD5DCE56B74C6C7F1BFD134DBBB78C447F57D900F37064FFFA6CBCCE7",
+      "LicenseTemplateSource": "https://raw.githubusercontent.com/spdx/license-list-data/421fbabbe80c94c58c12316af1bc6a2dca2362bc/text/BSD-2-Clause.txt",
+      "LicenseTemplateSha256": "F32FB3B417A194167CFAD068223FC975BA96C5960513A10F66A3C28720AEC1DF"
+    },
+    {
+      "Path": "libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua",
+      "Project": "LibSharedMedia-3.0",
+      "Source": "https://www.curseforge.com/wow/addons/libsharedmedia-3-0/files/8691989",
+      "SourceRevision": "r176",
+      "SourceArtifact": "LibSharedMedia-3.0-v12.1.0.zip",
+      "SourceArtifactSha256": "14BEB11FCC1082C7B846960FDE39596147A769A807601ECB0AEC4DE60750956D",
+      "RuntimeSha256": "B2650FC5ACBFF310C7F7A23A36C8026A99D2441982D4B4F63AFB76489D56B214",
+      "License": "LGPL-2.1-only",
+      "LicenseFile": "LICENSES/LibSharedMedia-3.0-LGPL-2.1.txt",
+      "LicenseTextSource": "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt",
+      "LicenseTextSha256": "20E50FE7AAE3E56378EBF0417D9DE904F55A0E61E4DF315333E632A4D3555D95",
+      "LicenseDeclarationSource": "https://repos.curseforge.com/wow/libsharedmedia-3-0/!svn/rvr/176/trunk/LibSharedMedia-3.0/LibSharedMedia-3.0.lua",
+      "LicenseDeclarationSha256": "EA359E44EAE4355C51A49A69960C878889EE26ADAC9D72D1362C22A3DB6AF6D0",
+      "CopyrightNoticeSource": "",
+      "CopyrightNoticeSha256": "",
+      "LicenseTemplateSource": "",
+      "LicenseTemplateSha256": ""
+    }
+  ]
+}

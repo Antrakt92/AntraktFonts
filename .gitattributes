@@ -1,5 +1,6 @@
 * text=auto
 *.lua text eol=lf
+*.toc text eol=lf
 *.py text eol=lf
 *.json text eol=lf
 *.md text eol=lf
@@ -9,3 +10,5 @@
 # Pinned upstream notices retain their original trailing whitespace.
 baseline/licenses/*.txt text eol=lf whitespace=-blank-at-eol,-blank-at-eof
 fonts/licenses/*.txt text eol=lf whitespace=-blank-at-eol,-blank-at-eof
+LICENSE text eol=lf
+libs/LibStub/LibStub.lua whitespace=-blank-at-eol
