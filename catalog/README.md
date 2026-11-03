@@ -39,6 +39,18 @@ matching requires a complete normalized path, never a basename or a same-name
 third-party LSM entry. Hashes are build/package evidence, not a Lua claim that
 the game has hashed or successfully applied a file.
 
+Format 1 permits 1–256 records. IDs are ASCII slugs of at most 64 bytes;
+filenames are ASCII and at most 128 bytes; display names are at most 128 UTF-8
+bytes. ASCII control characters are forbidden. The generator enforces these common
+bounds before producing a catalogue for independently updated consumers.
+
+Keep published IDs and canonical filenames stable across compatible updates.
+Consumers may save a complete path without saving a font ID; an older snapshot
+cannot recover a renamed path for a face added after that snapshot was shipped.
+Update the binary at its existing path, or introduce a new face at a new path.
+Changing or retiring a published path requires a separately reviewed compatibility
+and migration change rather than routine file cleanup.
+
 The API returns detached tables so callers cannot modify another consumer's
 catalogue. Actual LSM registration and existence/application checks are separate.
 Consumers validate bounded fields and formatMajor, coalesce cache refreshes on
@@ -66,6 +78,18 @@ coordinator. The generator reads but never rewrites it. `consumer/files.json`
 pins both portable module hashes and the baseline identity. Consumers copy and
 check those bytes; they keep private UI adapters and SavedVariables ownership.
 The snapshot does not implement UI, profile migration or notice persistence.
+
+Register each consumer with its own campaign state and `canShow`, `show`,
+`dismiss`, and `acknowledge` callbacks. `RequestShow()` schedules an automatic
+pending notice; `RequestInfo(owner)` explicitly opens contextual help through
+the same ownership token, including for fresh or acknowledged accounts. Opening
+or hiding a window never acknowledges it. An explicit confirmation persists each
+participant's own data; failed writes may retry on a later normal lifecycle event.
+Manual contextual requests still honor combat gates and existing modal ownership.
+Automatic migration information is unnecessary when the collection is already
+compatible and available. A consumer may persist its own `satisfied` state and
+map that to coordinator `fresh` (nonpending), rather than falsely acknowledging
+other participants. Only an actual user confirmation seeds shared acknowledgement.
 
 Verification:
 
