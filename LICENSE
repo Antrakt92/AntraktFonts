@@ -1,0 +1,22 @@
+Antrakt Attribution and CurseForge Rewards License 1.4
+Custom license based on MIT; not the standard MIT License.
+Copyright (c) 2026 Antrakt
+Project: Antrakt Fonts
+Original project: https://github.com/Antrakt92/AntraktFonts
+Source: https://github.com/Antrakt92/AntraktFonts
+
+You may use, copy, modify, merge, publish, distribute, sublicense and sell my original code and accompanying material under these conditions. Permission is automatic; no prior contact or approval is required.
+
+1. Keep this license and copyright notice in copies or substantial portions. For public substantial reuse, credit antrakt92, name and link to Antrakt Fonts, identify your changes, and retain these conditions when redistributing or sublicensing the covered work.
+
+2. Substantial reuse means redistributing the whole project or incorporating or adapting its original implementation of a meaningful user-facing feature, judged by functionality rather than line count. Isolated lines, incidental helpers, standard constructs and API calls require no reward share or additional public credit.
+
+3. If such a derivative earns CurseForge Reward Points, maintain a positive share of that derivative's points for antrakt92 through CurseForge's Members reward allocation while it uses the covered work and earns points. You choose the percentage based on the extent and significance of the reused work; there is no fixed minimum. One share per derivative covers all my works reused in it. No points means no payment; other projects, account earnings, donations and other revenue are excluded. Send the required member invitation and enable the share when accepted; a pending invitation awaiting my acceptance does not block permission. CurseForge's rules still apply.
+
+4. Ordinary use, recommendations, links, dependencies and collections referencing the original download require no share. Independent implementations, translations and compatibility patches require no share or additional public credit unless they substantially reuse the covered implementation.
+
+These terms cover only my original work. Third-party material retains its own terms and source-access obligations, including LGPL modification and debugging rights. No rights to third-party trademarks or game assets are granted.
+
+This version applies to copies distributed with it. Earlier copies and material obtained from them retain their grants. For my earlier custom licenses, I waive fixed-minimum and additional-per-source reward shares: the single positive share chosen by you above satisfies those clauses without approval. Other conditions remain unchanged; no new conditions apply to MIT copies or third-party material.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

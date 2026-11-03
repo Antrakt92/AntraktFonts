@@ -1,0 +1,8 @@
+{
+  "source": "https://github.com/Antrakt92/StatsPro/blob/8b3ad7a0969893265428d396a199099c56b470cc/scripts/bundled-fonts.json",
+  "revision": "8b3ad7a0969893265428d396a199099c56b470cc",
+  "canonicalManifestSha256WithoutAddedIds": "4107a846153fee7da2dc1f83a2664c23a21d88e2d6dfbcfeb87f1f8fc489962c",
+  "fontCount": 46,
+  "fontBytes": 68465504,
+  "licenseHashPolicy": "UTF-8 without BOM, CRLF and CR normalized to LF; matches original source contract"
+}
