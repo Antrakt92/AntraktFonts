@@ -35,12 +35,14 @@ def read_json(path: str) -> dict:
 
 
 def clean_text(value: object, maximum: int = 1024) -> bool:
-    return isinstance(value, str) and 0 < len(value) <= maximum and not any(ord(c) < 32 for c in value)
+    return isinstance(value, str) and 0 < len(value) <= maximum and not any(ord(c) < 32 or ord(c) == 127 for c in value)
 
 
 def build_contract() -> dict:
     source = read_json("catalog/fonts.json")
     receipt = read_json("catalog/import-receipt.json")
+    if not isinstance(source["fonts"], list) or not 1 <= len(source["fonts"]) <= 256:
+        raise ValueError("Font catalogue must contain 1 to 256 records")
     without_ids = {**source, "fonts": [{key: value for key, value in font.items() if key != "id"} for font in source["fonts"]]}
     if sha(canonical(without_ids)) != receipt["canonicalManifestSha256WithoutAddedIds"]:
         raise ValueError("Font provenance differs from its reviewed import receipt")
@@ -55,9 +57,9 @@ def build_contract() -> dict:
         filename = font["path"].removeprefix("fonts/")
         if not clean_text(identity, 64) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", identity):
             raise ValueError("Invalid stable font ID")
-        if not re.fullmatch(r"[A-Za-z0-9_.-]+\.(ttf|otf)", filename) or font["path"] != "fonts/" + filename:
+        if len(filename) > 128 or not re.fullmatch(r"[A-Za-z0-9_.-]+\.(ttf|otf)", filename) or font["path"] != "fonts/" + filename:
             raise ValueError("Invalid font file path")
-        if not clean_text(font["name"], 128):
+        if not clean_text(font["name"], 128) or len(font["name"].encode("utf-8")) > 128:
             raise ValueError("Invalid font name")
         if identity in identities or filename.lower() in filenames or font["name"] in names:
             raise ValueError("Duplicate font identity, file or name")

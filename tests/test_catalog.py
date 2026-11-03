@@ -122,6 +122,56 @@ class CatalogTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     GENERATOR.build_contract()
 
+    def test_future_catalogue_obeys_shared_format_one_byte_and_count_bounds(self):
+        original_json, original_bytes = GENERATOR.read_json, Path.read_bytes
+        binary = original_bytes(ROOT / self.source["fonts"][0]["path"])
+
+        def future_source(count=1, filename="future.ttf", name="Future Font", identity="future-font"):
+            source = copy.deepcopy(self.source)
+            source["retiredFonts"] = {}
+            source["fonts"] = []
+            for index in range(count):
+                font = copy.deepcopy(self.source["fonts"][0])
+                font.update(id=identity if count == 1 else "future-" + str(index),
+                            name=name if count == 1 else "Future " + str(index),
+                            path="fonts/" + (filename if count == 1 else "future-" + str(index) + ".ttf"))
+                source["fonts"].append(font)
+            return source
+
+        def build_future(source):
+            # Future imports legitimately update their receipt; bounds must hold
+            # independently of today's exact reviewed inventory and asset names.
+            receipt = copy.deepcopy(original_json("catalog/import-receipt.json"))
+            receipt["fontCount"] = len(source["fonts"])
+            without_ids = {**source, "fonts": [{k: v for k, v in font.items() if k != "id"} for font in source["fonts"]]}
+            receipt["canonicalManifestSha256WithoutAddedIds"] = GENERATOR.sha(GENERATOR.canonical(without_ids))
+            replacements = {ROOT / font["path"] for font in source["fonts"]}
+            def read_json(path):
+                if path == "catalog/fonts.json": return source
+                if path == "catalog/import-receipt.json": return receipt
+                return original_json(path)
+            def read_bytes(path):
+                return binary if path in replacements else original_bytes(path)
+            with patch.object(GENERATOR, "read_json", side_effect=read_json), patch.object(Path, "read_bytes", read_bytes):
+                return GENERATOR.build_contract()
+
+        for source in (
+            future_source(count=0), future_source(count=257),
+            future_source(filename="a" * 125 + ".ttf"),
+            future_source(name="\u5b57" * 43),
+            future_source(name="Future\x7fFont"),
+        ):
+            with self.subTest(count=len(source["fonts"]),
+                              file_bytes=len(source["fonts"][0]["path"].removeprefix("fonts/").encode()) if source["fonts"] else 0,
+                              name_bytes=len(source["fonts"][0]["name"].encode()) if source["fonts"] else 0):
+                with self.assertRaises(ValueError): build_future(source)
+        for source in (
+            future_source(filename="a" * 124 + ".ttf", name="\u5b57" * 42 + "AB", identity="a" * 64),
+            future_source(count=256),
+        ):
+            with self.subTest(valid_count=len(source["fonts"])):
+                self.assertEqual(len(build_future(source)["fonts"]), len(source["fonts"]))
+
     def test_lua_api_snapshot_namespace_and_detached_provider_data(self):
         lua = shutil.which("lua5.1")
         self.assertIsNotNone(lua, "Lua 5.1 is required for the runtime contract test")
