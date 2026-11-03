@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 - Unreleased
 
 - Provide an optional shared collection of 46 fonts for Retail and Forever beta.
 - Preserve each addon's own font settings and register fonts through LibSharedMedia.
