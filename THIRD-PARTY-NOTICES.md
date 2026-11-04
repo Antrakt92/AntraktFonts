@@ -89,6 +89,19 @@ Each font file below is unmodified. Keep its associated license when redistribut
 - Source: https://repos.wowace.com/wow/sharedmedia/!svn/rvr/202/trunk/fonts/tex_gyre_adventor/texgyreadventor-bold.otf
 - Source revision: r202
 
+#### Complete TeX Gyre Adventor distribution
+
+This collection includes the unmodified regular and bold OpenType files listed
+above, rather than the complete TeX Gyre Adventor family. The original family is
+by Bogusław Jackowski, Janusz M. Nowacki, Piotr Pianowski and Piotr Strzelczyk.
+The [upstream family page](https://www.gust.org.pl/projects/e-foundry/tex-gyre/adventor)
+provides the complete distribution, including other styles, documentation and
+TeX support. Its [manifest](https://www.gust.org.pl/projects/e-foundry/tex-gyre/adventor/MANIFEST-TeX-Gyre-Adventor.txt/view)
+identifies the original work's files. The complete TeX Gyre distribution is also
+available from [CTAN](https://ctan.org/pkg/tex-gyre).
+The individual file sources and immutable hashes above identify the copies
+included here; these upstream links provide access to the complete original work.
+
 ### Noto Sans
 
 - File: fonts/NotoSans-Regular.ttf

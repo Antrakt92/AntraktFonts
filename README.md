@@ -1,8 +1,13 @@
 # Antrakt Fonts
 
+<img src="media/antrakt-fonts-icon.png" alt="Antrakt Fonts" width="96" height="96">
+
 An optional collection of 46 fonts for World of Warcraft addons that support
 LibSharedMedia. Install it once per game client; supporting addons can share the
 same files while keeping their own font choices, sizes and profiles.
+
+**Development preview:** no public release is available yet. Installable files
+will be linked after release validation is complete.
 
 The collection includes Latin, Cyrillic, Chinese, Japanese and Korean faces.
 Each font supports its own character set. Supporting addons can use the
@@ -10,7 +15,9 @@ included metadata to offer fonts suitable for their selected interface language.
 
 ## Installation
 
-Choose the packaged ZIP for your client: **Retail: Midnight** or **Forever beta**.
+When a release is available, choose its packaged ZIP for your client:
+**Retail: Midnight** or **Forever beta**. GitHub source-code ZIPs are not
+installable addon packages.
 Extract its single `AntraktFonts` folder into that client's `Interface/AddOns`
 directory. Enable Antrakt Fonts in the AddOns list. Installing a new addon may
 require restarting the game. Install only the matching build in each client.
@@ -24,9 +31,6 @@ The two client builds use the same font collection and canonical file paths.
 Their client metadata differs. The collection updates independently of the
 addons that use it; routine stat-data updates do not require new font files.
 
-Current status: local development builds. Native client acceptance and public
-releases are pending. Download links will be added when verified files exist.
-
 ## Attribution and licenses
 
 Thanks to [chenrylee](https://github.com/chenrylee) for suggesting a separate font
@@ -38,3 +42,8 @@ The project's custom license applies only to original material.
 
 Developers: start with the [integration quickstart](examples/README.md), then see
 [CONTRIBUTING.md](CONTRIBUTING.md) and the [shared font contract](catalog/README.md).
+The optional integration utilities include localized guidance for 11 interface
+locales: English, German, Spanish (Spain and Mexico), French, Italian, Korean,
+Portuguese (Brazil), Russian, and Simplified and Traditional Chinese. Font
+coverage still varies by face; localized guidance does not imply that every
+font supports every language.
