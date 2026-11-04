@@ -15,7 +15,7 @@ WESTERN_LOCALES = LOCALES - {"koKR", "ruRU", "zhCN", "zhTW"}
 GLYPH_FIELDS = ("latin", "cyrillic", "hans", "hant", "hangul", "japanese")
 LEGACY_ADDONS = ("StatsPro", "DoYouNeedIt")
 MESSAGE_KEYS = {
-    "title", "missing", "ready", "settingsMissing", "selectedMissing", "disabled",
+    "title", "missing", "ready", "settingsMissing", "selectedMissing", "disabled", "notLoaded",
     "incompatible", "assetUnavailable", "details", "gotIt", "copyLink",
     "copyTitle", "copyInstructions", "linkUnavailable",
     "downloadReduction",

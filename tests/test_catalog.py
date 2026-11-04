@@ -96,6 +96,29 @@ class CatalogTests(unittest.TestCase):
         self.assertNotIn("path", self.contract["baseline"])
         self.assertEqual(set(self.contract["links"]), {"github", "curseforge", "wago"})
 
+    def test_not_loaded_guidance_is_localized_and_bounded(self):
+        for locale, values in self.contract["messages"].items():
+            with self.subTest(locale=locale):
+                self.assertEqual(len(values), 16)
+                self.assertIn("notLoaded", values)
+                self.assertNotEqual(values["notLoaded"], values["disabled"])
+                self.assertNotEqual(values["notLoaded"], values["settingsMissing"])
+                self.assertNotIn("%", values["notLoaded"])
+        original = GENERATOR.read_json
+        for mutation in ("missing", "extra", "placeholder"):
+            altered = copy.deepcopy(original("catalog/messages.json"))
+            if mutation == "missing":
+                altered["locales"]["enUS"].pop("notLoaded")
+            elif mutation == "extra":
+                altered["locales"]["enUS"]["unboundedState"] = "Unexpected state"
+            else:
+                altered["locales"]["enUS"]["notLoaded"] = "Unexpected %s placeholder"
+            with self.subTest(mutation=mutation), patch.object(
+                GENERATOR, "read_json", side_effect=lambda path: altered if path == "catalog/messages.json" else original(path)
+            ):
+                with self.assertRaises(ValueError):
+                    GENERATOR.build_contract()
+
     def test_invalid_distribution_links_and_duplicate_id_are_rejected(self):
         original = GENERATOR.read_json
         for bad_source in ("catalog/distribution.json", "catalog/fonts.json"):

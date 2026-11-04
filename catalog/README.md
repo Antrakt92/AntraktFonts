@@ -5,8 +5,10 @@ The import receipt protects the reviewed original provenance; all 46 font binari
 are unchanged. Font license hashes use the original contract's UTF-8/BOM-aware,
 LF-normalized text policy. No runtime component fetches provenance URLs.
 
-`messages.json` owns the fixed `shared-fonts-move-v1` campaign and its 15 strings
-in all 11 supported locales. `selectedMissing` takes one safe validated display
+`messages.json` owns the fixed `shared-fonts-move-v1` campaign and its 16 strings
+in all 11 supported locales. `notLoaded` gives neutral AddOns-list/reload guidance
+when the collection is not loaded, without asserting installation status.
+`disabled` remains the explicit enable instruction. `selectedMissing` takes one safe validated display
 name through `%s`. Optional `downloadReduction` takes one formatted measured
 percentage (including its percent sign) through `%s`. Show it only when that
 consumer's actual old/new release archives have a verified size comparison;
