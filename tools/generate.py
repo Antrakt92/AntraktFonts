@@ -18,7 +18,7 @@ MESSAGE_KEYS = {
     "title", "missing", "ready", "settingsMissing", "selectedMissing", "disabled", "notLoaded",
     "incompatible", "assetUnavailable", "details", "gotIt", "copyLink",
     "copyTitle", "copyInstructions", "linkUnavailable",
-    "downloadReduction",
+    "downloadReduction", "enable", "reloadRequired", "enableFailed", "reload",
 }
 
 

@@ -96,10 +96,29 @@ class CatalogTests(unittest.TestCase):
         self.assertNotIn("path", self.contract["baseline"])
         self.assertEqual(set(self.contract["links"]), {"github", "curseforge", "wago"})
 
+    def test_explicit_enable_action_copy_is_localized_and_bounded(self):
+        for locale, values in self.contract["messages"].items():
+            with self.subTest(locale=locale):
+                for key in ("enable", "reloadRequired", "enableFailed", "reload"):
+                    self.assertIn(key, values)
+                    self.assertNotIn("%", values[key])
+                self.assertEqual(len({values[key] for key in ("enable", "reloadRequired", "enableFailed", "reload", "notLoaded", "disabled")}), 6)
+        original = GENERATOR.read_json
+        for key in ("enable", "reloadRequired", "enableFailed", "reload"):
+            for mutation in ("missing", "placeholder"):
+                altered = copy.deepcopy(original("catalog/messages.json"))
+                if mutation == "missing":
+                    altered["locales"]["enUS"].pop(key)
+                else:
+                    altered["locales"]["enUS"][key] = "Unexpected %s placeholder"
+                with self.subTest(key=key, mutation=mutation), patch.object(GENERATOR, "read_json", side_effect=lambda path: altered if path == "catalog/messages.json" else original(path)):
+                    with self.assertRaises(ValueError):
+                        GENERATOR.build_contract()
+
     def test_not_loaded_guidance_is_localized_and_bounded(self):
         for locale, values in self.contract["messages"].items():
             with self.subTest(locale=locale):
-                self.assertEqual(len(values), 16)
+                self.assertEqual(len(values), 20)
                 self.assertIn("notLoaded", values)
                 self.assertNotEqual(values["notLoaded"], values["disabled"])
                 self.assertNotEqual(values["notLoaded"], values["settingsMissing"])
