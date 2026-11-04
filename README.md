@@ -1,6 +1,18 @@
-# Antrakt Fonts
+<p align="center">
+  <img src="media/antrakt-fonts-icon.png" alt="Antrakt Fonts logo" width="112" height="112">
+</p>
 
-<img src="media/antrakt-fonts-icon.png" alt="Antrakt Fonts" width="96" height="96">
+<h1 align="center">Antrakt Fonts</h1>
+
+<p align="center">
+  46 fonts. One collection for your WoW addons.
+</p>
+
+<p align="center">
+  <a href="#installation">Installation</a>
+  · <a href="#fonts">Fonts</a>
+  · <a href="#questions-or-problems">Help</a>
+</p>
 
 46 fonts for World of Warcraft addons, shared through LibSharedMedia.
 Install the collection once per game client, then choose a font in your addon's
@@ -10,15 +22,33 @@ The fonts used to be bundled with StatsPro and Do You Need It? Keeping them in
 one package makes regular addon downloads smaller and lets other addons use
 the same collection.
 
-**Release files are not available yet.**
+**Retail release awaiting approval. Forever build still in testing.**
+
+<p align="center">
+  <img src="media/font-picker.png" alt="Shared fonts in the StatsPro font picker" width="641">
+</p>
+
+*The collection in StatsPro. Fonts are selected in the addon that uses them.*
 
 ## Installation
 
-When files are available, download the build for your client: **Retail: Midnight**
-or **WoW Forever beta**. Extract the `AntraktFonts` folder into
-`Interface/AddOns` and keep it enabled in the game's AddOns list. A newly
-installed addon may need a game restart to appear. GitHub source-code ZIPs are
-not installable packages.
+The Retail build is being prepared for **Midnight**; the **WoW Forever beta**
+build needs further testing. Download links will be added when each build is
+available.
+
+For a manual install:
+
+1. Download the packaged ZIP for your client.
+2. Extract its `AntraktFonts` folder into that client's `Interface/AddOns` folder.
+3. Keep **Antrakt Fonts** enabled in the game's AddOns list, then choose a font
+   in your addon's settings.
+
+A newly installed addon may need a game restart to appear. GitHub source-code
+ZIPs are not installable packages.
+
+<p align="center">
+  <img src="media/addon-list.png" alt="Antrakt Fonts enabled under Antrakt92 in the AddOns list" width="412">
+</p>
 
 Upcoming CurseForge versions of StatsPro and Do You Need It? will list Antrakt
 Fonts as a dependency, so the app can install the matching build for you. This
@@ -43,7 +73,7 @@ metadata. Font updates are separate from updates to the addons that use them.
 
 [Open an issue](https://github.com/Antrakt92/AntraktFonts/issues) if something
 isn't working. If you'd like to use the collection in your own addon, see the
-[connection examples](examples/README.md).
+[examples](examples/README.md).
 
 Thanks to [chenrylee](https://github.com/chenrylee) for the idea to move fonts
 into a separate package ([StatsPro #10](https://github.com/Antrakt92/StatsPro/issues/10)).
