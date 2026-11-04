@@ -69,6 +69,7 @@ def validate_toc(text: str, flavor: str, interface: str) -> None:
         "interface": interface,
         "version": "@project-version@",
         "x-antraktfonts-flavor": flavor,
+        "x-curse-project-id": "1783613",
     }.items():
         if headers.get(key) != [expected]:
             raise ValueError(f"TOC requires one matching {key} header")

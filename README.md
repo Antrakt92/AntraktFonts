@@ -22,6 +22,14 @@ Extract its single `AntraktFonts` folder into that client's `Interface/AddOns`
 directory. Enable Antrakt Fonts in the AddOns list. Installing a new addon may
 require restarting the game. Install only the matching build in each client.
 
+For upcoming CurseForge releases, StatsPro and DoYouNeedIt are planned to list
+Antrakt Fonts as a required installation dependency, so the app can obtain the
+matching collection when needed. This delivery integration is not live yet:
+provider files and consumer dependency metadata still need to be published.
+Manual installation remains supported, and consumers can still use their
+readable fallback without the collection. Antrakt Fonts itself requires neither
+consumer addon.
+
 Select a font in the settings of an addon that supports shared fonts. This
 package has no separate settings window and does not change the game's fonts
 or another addon's settings automatically. Antrakt Fonts does not require

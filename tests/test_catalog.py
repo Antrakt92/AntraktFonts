@@ -25,6 +25,33 @@ class CatalogTests(unittest.TestCase):
         cls.records = {record["id"]: record for record in cls.contract["fonts"]}
         cls.corpus = json.loads((ROOT / "baseline/corpus.json").read_text())
 
+    def test_provider_client_tocs_have_real_curseforge_identity(self):
+        for name in ("AntraktFonts.toc", "AntraktFonts_Forever.toc"):
+            with self.subTest(toc=name):
+                headers = [line.strip() for line in (ROOT / name).read_text().splitlines()
+                           if line.lower().startswith("## x-curse-project-id:")]
+                self.assertEqual(headers, ["## X-Curse-Project-ID: 1783613"])
+
+    def test_packager_rejects_wrong_missing_and_duplicate_curseforge_identity(self):
+        spec = importlib.util.spec_from_file_location("package_identity", ROOT / "scripts/package.py")
+        package = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(package)
+        header = "## X-Curse-Project-ID: 1783613"
+        for flavor, (name, interface) in package.FLAVORS.items():
+            source = (ROOT / name).read_text()
+            valid = source if header in source else header + "\n" + source
+            package.validate_toc(valid, flavor, interface)
+            for mutation, text in (
+                ("missing", valid.replace(header + "\n", "")),
+                ("wrong", valid.replace(header, "## X-Curse-Project-ID: 1783614")),
+                ("not-numeric", valid.replace(header, "## X-Curse-Project-ID: unknown")),
+                ("leading-zero", valid.replace(header, "## X-Curse-Project-ID: 01783613")),
+                ("duplicate", valid + header + "\n"),
+                ("duplicate-case", valid + "## x-curse-project-id: 1783613\n"),
+            ):
+                with self.subTest(flavor=flavor, mutation=mutation), self.assertRaisesRegex(ValueError, "x-curse-project-id"):
+                    package.validate_toc(text, flavor, interface)
+
     def test_generated_files_and_export_digests_are_exact(self):
         for path, data in GENERATOR.outputs().items():
             self.assertEqual(path.read_bytes(), data, path.name)

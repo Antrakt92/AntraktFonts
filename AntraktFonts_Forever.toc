@@ -3,6 +3,7 @@
 ## Notes: Optional shared font collection for addons using LibSharedMedia.
 ## Author: Antrakt
 ## Version: @project-version@
+## X-Curse-Project-ID: 1783613
 ## X-License: Custom (see LICENSE); third-party fonts and libraries retain their licenses.
 ## X-AntraktFonts-Flavor: forever
 
