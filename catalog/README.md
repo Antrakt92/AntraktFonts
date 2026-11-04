@@ -10,9 +10,9 @@ in all 11 supported locales. `notLoaded` gives neutral AddOns-list/reload guidan
 when the collection is not loaded, without asserting installation status.
 `disabled` remains the explicit enable instruction. `enable`, `reloadRequired`,
 `enableFailed`, and `reload` support consumer-owned, explicit button actions.
-Only display `reloadRequired` after confirming the addon is enabled. A separate
-reload click is required; neither opening help nor enabling the addon authorizes
-an automatic reload. The coordinator owns no action UI or addon-loading APIs.
+Only display `reloadRequired` after confirming the addon is enabled. Opening help never enables or reloads anything. An explicit enable click may
+also reload the UI after verified enablement and saving; consumers can retain
+a reload action for recovery if activation could not complete. The coordinator owns no action UI or addon-loading APIs.
 
 `selectedMissing` takes one safe validated display name through `%s`. Optional `downloadReduction` takes one formatted measured
 percentage (including its percent sign) through `%s`. Show it only when that
