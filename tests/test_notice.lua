@@ -384,4 +384,33 @@ do
         and type(coordinator.RequestInfo) == "function", "incomplete same-major protocol isolates without overwrite")
 end
 
+-- A peer's saved acknowledgement must not close explicitly opened information.
+for _,state in ipairs({"pending","fresh","acknowledged"}) do
+    local _,load=environment()
+    local coordinator=load().GetCoordinator()
+    local manual=participant(state~="pending" and state or nil)
+    local peer=participant("acknowledged")
+    coordinator:Register("A",manual:callbacks())
+    check(coordinator:RequestInfo("A") and manual.visible,"manual information opens before peer acknowledgement: "..state)
+    local confirm=manual.confirm
+    coordinator:Register("B",peer:callbacks())
+    check(manual.visible and not manual.dismissals,"peer acknowledgement preserves active manual window: "..state)
+    local busy,owner=coordinator:RequestInfo("B")
+    check(busy and owner=="A" and peer.shows==0,"manual token remains busy for another peer: "..state)
+    coordinator:Register("B",peer:callbacks())
+    check(manual.visible and manual.shows==1,"repeated stale peer registration cannot close or replace manual information: "..state)
+    check(confirm(),"manual confirmation token remains valid after peer acknowledgement: "..state)
+    check(manual.state=="acknowledged" and manual.writes==(state=="acknowledged" and 0 or 1),"manual persistence remains owned and explicit where needed: "..state)
+end
+for _,state in ipairs({"fresh","acknowledged"}) do
+    local _,load=environment()
+    local coordinator=load().GetCoordinator()
+    local manual=participant(state)
+    coordinator:Register("A",manual:callbacks());coordinator:RequestInfo("A")
+    local staleConfirm,staleSuspend=manual.confirm,manual.suspend
+    coordinator:Register("A",manual:callbacks())
+    check(not manual.visible and manual.dismissals==1,"same-owner registration still dismisses its replaced manual window: "..state)
+    check(not staleConfirm() and not staleSuspend() and manual.writes==0,"same-owner replacement invalidates old manual callbacks without acknowledgement: "..state)
+    check(coordinator:RequestInfo("A") and manual.shows==2,"replacement owner can open current manual information: "..state)
+end
 print("Notice coordinator: " .. checks .. " checks passed")
