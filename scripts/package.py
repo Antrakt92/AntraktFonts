@@ -70,6 +70,7 @@ def validate_toc(text: str, flavor: str, interface: str) -> None:
         "version": "@project-version@",
         "x-antraktfonts-flavor": flavor,
         "x-curse-project-id": "1783613",
+        "icontexture": "Interface\\AddOns\\AntraktFonts\\media\\antrakt-fonts-addon.png",
     }.items():
         if headers.get(key) != [expected]:
             raise ValueError(f"TOC requires one matching {key} header")
@@ -91,7 +92,7 @@ def inventory(root: Path = ROOT) -> dict[str, str]:
     lib_manifest = json.loads(safe_file(root, "catalog/libraries.json").read_text())
     if font_manifest["schemaVersion"] != 1 or lib_manifest["schemaVersion"] != 1:
         raise ValueError("Unsupported package source manifest")
-    paths = {name: name for name in ("AntraktFonts.lua", "AntraktFonts_Catalog.lua", "LICENSE", "THIRD-PARTY-NOTICES.md", "CHANGELOG.md")}
+    paths = {name: name for name in ("AntraktFonts.lua", "AntraktFonts_Catalog.lua", "LICENSE", "THIRD-PARTY-NOTICES.md", "CHANGELOG.md", "media/antrakt-fonts-addon.png")}
     notice = safe_file(root, "THIRD-PARTY-NOTICES.md").read_text(encoding="utf-8")
     for font in font_manifest["fonts"]:
         for path in (font["path"], font["licenseFile"]):

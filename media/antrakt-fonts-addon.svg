@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="24 24 464 464" role="img" aria-labelledby="title desc">
+  <title id="title">Antrakt Fonts</title>
+  <desc id="desc">Mint Aa lettering on a rounded teal panel with transparent corners.</desc>
+  <!-- Letter outlines: Noto Sans Regular (SIL OFL 1.1); see baseline/licenses/NotoSans-OFL.txt. -->
+  <defs><linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1B4448"/><stop offset="1" stop-color="#102D31"/></linearGradient></defs>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="url(#panel)" stroke="#2C6466" stroke-width="2"/>
+  <path fill="#A4F4D0" transform="translate(88.150000 348.050000) scale(0.300000 -0.300000)" d="M545 0 459 221H176L91 0H0L279 717H360L638 0ZM352 517Q349 525 342.0 546.0Q335 567 328.5 589.5Q322 612 318 624Q311 593 302.0 563.5Q293 534 287 517L206 301H432Z"/>
+  <path fill="#A4F4D0" transform="translate(279.850000 348.050000) scale(0.300000 -0.300000)" d="M288 545Q386 545 433.0 502.0Q480 459 480 365V0H416L399 76H395Q360 32 321.5 11.0Q283 -10 215 -10Q142 -10 94.0 28.5Q46 67 46 149Q46 229 109.0 272.5Q172 316 303 320L394 323V355Q394 422 365.0 448.0Q336 474 283 474Q241 474 203.0 461.5Q165 449 132 433L105 499Q140 518 188.0 531.5Q236 545 288 545ZM314 259Q214 255 175.5 227.0Q137 199 137 148Q137 103 164.5 82.0Q192 61 235 61Q303 61 348.0 98.5Q393 136 393 214V262Z"/>
+  <rect x="210" y="388" width="92" height="7" rx="3.5" fill="#60BCA6"/>
+</svg>

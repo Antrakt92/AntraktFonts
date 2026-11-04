@@ -1,5 +1,6 @@
 ## Interface: 120105
 ## Title: Antrakt Fonts
+## IconTexture: Interface\AddOns\AntraktFonts\media\antrakt-fonts-addon.png
 ## Category: Antrakt92
 ## Group: AntraktFonts
 ## Notes: Shared fonts for StatsPro, Do You Need It? and compatible addons. Keep enabled.

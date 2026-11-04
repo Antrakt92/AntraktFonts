@@ -36,13 +36,19 @@ class PackageTests(unittest.TestCase):
                 expected.add("AntraktFonts/AntraktFonts.toc")
                 self.assertEqual(set(archive.namelist()), expected)
                 self.assertEqual(len(archive.namelist()), len(expected))
-                self.assertEqual(len(expected), 93)
+                self.assertEqual(len(expected), 94)
                 self.assertEqual(archive.testzip(), None)
                 toc = archive.read("AntraktFonts/AntraktFonts.toc").decode()
                 self.assertIn("## Version: 0.0.0\n", toc)
                 self.assertIn("## Interface: " + PACKAGE.FLAVORS[flavor][1] + "\n", toc)
                 self.assertIn("## X-AntraktFonts-Flavor: " + flavor + "\n", toc)
                 self.assertNotIn("@project-version@", toc)
+                self.assertIn("## IconTexture: Interface\\AddOns\\AntraktFonts\\media\\antrakt-fonts-addon.png\n", toc)
+                icon = archive.read("AntraktFonts/media/antrakt-fonts-addon.png")
+                self.assertEqual(icon, (ROOT / "media/antrakt-fonts-addon.png").read_bytes())
+                self.assertEqual(icon[:8], b"\x89PNG\r\n\x1a\n")
+                self.assertEqual(icon[25], 6)  # RGBA; transparent corners survive packaging.
+
                 for info in archive.infolist():
                     self.assertEqual(info.date_time, (2000, 1, 1, 0, 0, 0))
                     self.assertNotIn("baseline", info.filename)
