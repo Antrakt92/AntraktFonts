@@ -36,5 +36,5 @@ Each font and bundled library retains its own license. See
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md), `fonts/licenses/` and `LICENSES/`.
 The project's custom license applies only to original material.
 
-Developers: see [CONTRIBUTING.md](CONTRIBUTING.md) and the
-[shared font contract](catalog/README.md).
+Developers: start with the [integration quickstart](examples/README.md), then see
+[CONTRIBUTING.md](CONTRIBUTING.md) and the [shared font contract](catalog/README.md).

@@ -24,7 +24,9 @@ checkout. Its outputs and source catalogue snapshots are committed together.
 
 ## Provider API
 
-Load `AntraktFonts_Catalog.lua` before the registration module. It exposes:
+For third-party addons, start with the [integration quickstart](../examples/README.md).
+The installed provider loads its own `AntraktFonts_Catalog.lua` before its
+registration module. Once present and loaded, it exposes:
 
 ```lua
 local catalog = AntraktFonts.GetCatalog()
@@ -62,7 +64,14 @@ Compatibility is based on `formatMajor`, not equality with the consumer snapshot
 revision. A newer compatible catalogue can add faces independently. A changed
 revision invalidates cached catalogues; it is not a reason to reject the provider.
 
-## Consumer snapshot
+## Optional migration utilities
+
+The consumer snapshot and notice coordinator below support migration in existing
+consumers such as StatsPro and DoYouNeedIt. They are not required for either the
+standard LSM route or an independent `GetCatalog()` reader. Third-party authors
+do not need to copy these utilities or the baseline to use the collection.
+
+### Consumer snapshot
 
 Copy `consumer/AntraktFontCatalog.lua` unchanged into each consumer. It attaches
 to `namespace.AntraktFontCatalog` from `local _, namespace = ...` and returns

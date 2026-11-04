@@ -17,6 +17,15 @@ changing them. See `catalog/README.md` for the API and portable consumer modules
 The baseline recipe in `baseline/` is a separate asset role: consumers carry its
 verified TTF and notices. It is excluded from the optional collection's ZIP.
 
+## Connecting another addon
+
+The [integration quickstart](examples/README.md) explains ordinary LSM use and
+an optional catalog reader. Its checked [independent example](examples/IndependentFonts.lua)
+uses neither core addon nor the migration/notice modules. The local gate executes
+that exact source through `tests/test_example_consumer.lua`; it is excluded from
+installable provider archives. Your addon retains its own UI, preferences and
+readable fallback.
+
 ## Local packages
 
 `python scripts/package.py --flavor retail --version <reviewed-version>` builds

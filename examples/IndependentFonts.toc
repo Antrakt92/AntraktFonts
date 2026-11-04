@@ -1,0 +1,4 @@
+## Interface: 120105
+## Title: Independent font example
+## OptionalDeps: AntraktFonts
+IndependentFonts.lua
