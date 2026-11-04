@@ -28,7 +28,7 @@ class CatalogTests(unittest.TestCase):
     def test_provider_client_tocs_have_real_curseforge_identity(self):
         for name in ("AntraktFonts.toc", "AntraktFonts_Forever.toc"):
             with self.subTest(toc=name):
-                headers = [line.strip() for line in (ROOT / name).read_text().splitlines()
+                headers = [line.strip() for line in (ROOT / name).read_text(encoding="utf-8").splitlines()
                            if line.lower().startswith("## x-curse-project-id:")]
                 self.assertEqual(headers, ["## X-Curse-Project-ID: 1783613"])
 
@@ -38,7 +38,7 @@ class CatalogTests(unittest.TestCase):
         spec.loader.exec_module(package)
         header = "## X-Curse-Project-ID: 1783613"
         for flavor, (name, interface) in package.FLAVORS.items():
-            source = (ROOT / name).read_text()
+            source = (ROOT / name).read_text(encoding="utf-8")
             valid = source if header in source else header + "\n" + source
             package.validate_toc(valid, flavor, interface)
             for mutation, text in (

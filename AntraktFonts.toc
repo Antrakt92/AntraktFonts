@@ -1,6 +1,18 @@
 ## Interface: 120105
 ## Title: Antrakt Fonts
-## Notes: Optional shared font collection for addons using LibSharedMedia.
+## Category: Antrakt92
+## Group: AntraktFonts
+## Notes: Shared fonts for StatsPro, Do You Need It? and compatible addons. Keep enabled.
+## Notes-deDE: Gemeinsame Schriftarten für StatsPro, Do You Need It? und kompatible Addons. Aktiviert lassen.
+## Notes-esES: Fuentes compartidas para StatsPro, Do You Need It? y addons compatibles. Mantener activado.
+## Notes-esMX: Fuentes compartidas para StatsPro, Do You Need It? y addons compatibles. Mantener activado.
+## Notes-frFR: Polices partagées pour StatsPro, Do You Need It? et les addons compatibles. Gardez cet addon activé.
+## Notes-itIT: Caratteri condivisi per StatsPro, Do You Need It? e addon compatibili. Lascia attivo.
+## Notes-koKR: StatsPro, Do You Need It? 및 호환 애드온을 위한 공용 글꼴입니다. 활성화 상태로 두세요.
+## Notes-ptBR: Fontes compartilhadas para StatsPro, Do You Need It? e addons compatíveis. Mantenha ativado.
+## Notes-ruRU: Общие шрифты для StatsPro, Do You Need It? и совместимых аддонов. Оставьте включённым.
+## Notes-zhCN: 供 StatsPro、Do You Need It? 及兼容插件使用的共享字体。请保持启用。
+## Notes-zhTW: 供 StatsPro、Do You Need It? 及相容插件使用的共用字型。請保持啟用。
 ## Author: Antrakt
 ## Version: @project-version@
 ## X-Curse-Project-ID: 1783613
