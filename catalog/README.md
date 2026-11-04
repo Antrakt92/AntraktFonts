@@ -19,7 +19,9 @@ percentage (including its percent sign) through `%s`. Show it only when that
 consumer's actual old/new release archives have a verified size comparison;
 omit it when no measurement is available. Never substitute a guessed percentage.
 `distribution.json` contains real public project links or null. Null means the
-UI must show `linkUnavailable` instead of an active copy/download action. Local
+UI must show `linkUnavailable` instead of an active copy/download action when
+download guidance applies. Ready, disabled and not-loaded presentations do not
+offer a download or an unavailable-download message. Local
 generation works before marketplace projects exist; no invented project IDs.
 
 Run `python tools/generate.py`, or `python tools/generate.py --check` for a
@@ -102,10 +104,12 @@ the same ownership token, including for fresh or acknowledged accounts. Opening
 or hiding a window never acknowledges it. An explicit confirmation persists each
 participant's own data; failed writes may retry on a later normal lifecycle event.
 Manual contextual requests still honor combat gates and existing modal ownership.
-Automatic migration information is unnecessary when the collection is already
-compatible and available. A consumer may persist its own `satisfied` state and
-map that to coordinator `fresh` (nonpending), rather than falsely acknowledging
-other participants. Only an actual user confirmation seeds shared acknowledgement.
+Existing accounts receive the migration explanation once, including when the
+collection is already compatible and available. Fresh installations do not need
+an automatic migration notice. Keep the same campaign and preserve confirmed
+acknowledgements so later updates do not repeat it. Provider readiness alone does
+not acknowledge the explanation; only an actual user confirmation seeds shared
+acknowledgement.
 
 Verification:
 
