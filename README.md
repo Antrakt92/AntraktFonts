@@ -29,7 +29,7 @@ StatsPro or DoYouNeedIt. Those addons can run without this optional collection.
 
 The two client builds use the same font collection and canonical file paths.
 Their client metadata differs. The collection updates independently of the
-addons that use it; routine stat-data updates do not require new font files.
+addons that use it; routine updates to a compatible addon do not download the whole font collection again.
 
 ## Attribution and licenses
 
