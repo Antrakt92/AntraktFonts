@@ -22,7 +22,7 @@ The fonts used to be bundled with StatsPro and Do You Need It? Keeping them in
 one package makes regular addon downloads smaller and lets other addons use
 the same collection.
 
-**[Available on CurseForge for Retail: Midnight](https://www.curseforge.com/wow/addons/antrakt-fonts).** A separate Forever build is being prepared.
+**[Available on CurseForge for Retail: Midnight and WoW Forever](https://www.curseforge.com/wow/addons/antrakt-fonts).** Each client has its own build.
 
 <p align="center">
   <img src="media/font-picker.png" alt="Shared fonts in the StatsPro font picker" width="641">
@@ -33,8 +33,8 @@ the same collection.
 ## Installation
 
 Install [Antrakt Fonts on CurseForge](https://www.curseforge.com/wow/addons/antrakt-fonts)
-for **Retail: Midnight**. The separate **WoW Forever beta** download will appear
-in the project's Files tab after approval; use the build for your game client.
+for **Retail: Midnight** or **WoW Forever**. Choose the matching build in the
+project's Files tab or use the CurseForge app for that game client.
 
 For a manual install:
 
@@ -50,10 +50,11 @@ ZIPs are not installable packages.
   <img src="media/addon-list.png" alt="Antrakt Fonts enabled under Antrakt92 in the AddOns list" width="412">
 </p>
 
-Upcoming CurseForge versions of StatsPro and Do You Need It? will list Antrakt
-Fonts as a dependency, so the app can install the matching build for you. This
-is not live yet. You can also install it manually. Both addons keep a readable
-default font when the collection is missing.
+When StatsPro or Do You Need It? lists Antrakt Fonts as a required dependency,
+the CurseForge app installs the matching collection with that version. One copy
+serves both addons in the same client. For manual ZIP or Wago installs, install
+the collection separately. Both addons keep a readable default font when the
+collection is missing.
 
 Choose your font in the addon that uses it. Antrakt Fonts has no settings window
 and does not change the game's fonts. It works without StatsPro or Do You Need
