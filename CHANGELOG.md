@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 - 05-Nov-2026 — Shared downloads for both clients
+
+- Add the CurseForge download link used by compatible addons.
+- Provide a separate WoW Forever build alongside Retail: Midnight.
+- Keep the same 46 fonts, names and file paths in both builds.
+
 ## 1.0.0 - 04-Nov-2026 — First shared font collection
 
 - Provide a shared collection of 46 fonts for compatible World of Warcraft addons.

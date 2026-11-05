@@ -22,7 +22,7 @@ The fonts used to be bundled with StatsPro and Do You Need It? Keeping them in
 one package makes regular addon downloads smaller and lets other addons use
 the same collection.
 
-**Retail release awaiting approval. Forever build still in testing.**
+**[Available on CurseForge for Retail: Midnight](https://www.curseforge.com/wow/addons/antrakt-fonts).** A separate Forever build is being prepared.
 
 <p align="center">
   <img src="media/font-picker.png" alt="Shared fonts in the StatsPro font picker" width="641">
@@ -32,9 +32,9 @@ the same collection.
 
 ## Installation
 
-The Retail build is being prepared for **Midnight**; the **WoW Forever beta**
-build needs further testing. Download links will be added when each build is
-available.
+Install [Antrakt Fonts on CurseForge](https://www.curseforge.com/wow/addons/antrakt-fonts)
+for **Retail: Midnight**. The separate **WoW Forever beta** download will appear
+in the project's Files tab after approval; use the build for your game client.
 
 For a manual install:
 
