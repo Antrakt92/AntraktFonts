@@ -38,7 +38,9 @@ project's Files tab or use the CurseForge app for that game client.
 
 For a manual install:
 
-1. Download the packaged ZIP for your client.
+1. Download the Retail or Forever ZIP from the
+   [GitHub release](https://github.com/Antrakt92/AntraktFonts/releases/latest)
+   or the CurseForge Files tab.
 2. Extract its `AntraktFonts` folder into that client's `Interface/AddOns` folder.
 3. Keep **Antrakt Fonts** enabled in the game's AddOns list, then choose a font
    in your addon's settings.
@@ -51,7 +53,7 @@ ZIPs are not installable packages.
 </p>
 
 When StatsPro or Do You Need It? lists Antrakt Fonts as a required dependency,
-the CurseForge app installs the matching collection with that version. One copy
+CurseForge can fetch the matching collection as part of that installation. One copy
 serves both addons in the same client. For manual ZIP or Wago installs, install
 the collection separately. Both addons keep a readable default font when the
 collection is missing.
