@@ -29,10 +29,15 @@ readable fallback.
 ## Local packages
 
 `python scripts/package.py --flavor retail --version <reviewed-version>` builds
-the Retail archive; use `--flavor forever` for Forever beta. A version is required;
-there is no default or implicit publication. Select it from the full unreleased
-range before preparing a release. Source TOCs retain `@project-version@`.
-The packager never modifies source files and refuses to overwrite an archive.
+the Retail archive. Use `--flavor forever` for Forever beta or `--flavor both` to
+build both ZIPs from one source snapshot and report their SHA-256 digests
+together. The requested version must match the first release heading in
+`CHANGELOG.md`. Select it from the full unreleased range before preparing a release.
+Source TOCs retain `@project-version@`. The packager leaves source files untouched
+and refuses to overwrite an archive.
+
+For a release handoff, run the paired build from an export of the reviewed Git
+commit. Record that commit's SHA alongside the build's JSON output.
 
 Only exact runtime files, fonts, font/library license materials, the project
 license, third-party notices and cumulative changelog are included. Each archive

@@ -21,13 +21,22 @@ SPEC.loader.exec_module(PACKAGE)
 class PackageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.packages = {}
-        for flavor in PACKAGE.FLAVORS:
-            first, receipt = PACKAGE.archive_bytes(flavor, "0.0.0", fixture=True)
+        with patch.object(PACKAGE, "read_inventory", wraps=PACKAGE.read_inventory) as capture:
+            cls.packages = PACKAGE.archive_set(tuple(PACKAGE.FLAVORS), "0.0.0", fixture=True)
+            capture.assert_called_once_with(ROOT)
+        for flavor, (first, receipt) in cls.packages.items():
             second, second_receipt = PACKAGE.archive_bytes(flavor, "0.0.0", fixture=True)
             if first != second or receipt != second_receipt:
-                raise AssertionError("Client archives must rebuild byte-for-byte")
-            cls.packages[flavor] = first, receipt
+                raise AssertionError("Paired and single-client builds must produce identical ZIPs and receipts")
+
+    def test_pair_contains_identical_common_files(self):
+        retail, forever = (self.packages[flavor][0] for flavor in ("retail", "forever"))
+        with zipfile.ZipFile(io.BytesIO(retail)) as first, zipfile.ZipFile(io.BytesIO(forever)) as second:
+            self.assertEqual(first.namelist(), second.namelist())
+            self.assertEqual(
+                [name for name in first.namelist() if first.read(name) != second.read(name)],
+                ["AntraktFonts/AntraktFonts.toc"],
+            )
 
     def test_deterministic_exact_client_inventory_and_metadata(self):
         for flavor, (data, receipt) in self.packages.items():
@@ -99,6 +108,13 @@ class PackageTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             PACKAGE.archive_bytes("retail", "1.2.3")
 
+    def test_historical_changelog_heading_does_not_authorize_package(self):
+        snapshots = PACKAGE.read_inventory()
+        snapshots["CHANGELOG.md"] = b"# Changelog\n\n## 1.2.4 - Current\n\n## 1.2.3 - Historical\n"
+        with patch.object(PACKAGE, "read_inventory", return_value=snapshots):
+            with self.assertRaisesRegex(ValueError, "first release heading"):
+                PACKAGE.archive_bytes("retail", "1.2.3")
+
     def test_duplicate_or_stateful_dependent_toc_headers_are_rejected(self):
         original = PACKAGE.safe_file
         source = (ROOT / "AntraktFonts.toc").read_bytes()
@@ -115,6 +131,8 @@ class PackageTests(unittest.TestCase):
             "## RequiredDeps: DoYouNeedIt",
             "## RequiredDependencies: StatsPro",
             "## LoadOnDemand: 1",
+            "## LoadWith: OtherAddon",
+            "## Interface-Retail: 999999",
         ):
             class MutatedToc:
                 def read_bytes(self):
@@ -134,6 +152,19 @@ class PackageTests(unittest.TestCase):
             for flavor, version in (("../escape", "1.2.3"), ("retail", "../escape")):
                 with self.assertRaises(ValueError):
                     PACKAGE.write_archive(b"fixture", flavor, version, Path(directory))
+
+    def test_pair_output_collision_preserves_existing_archive(self):
+        archives = {"retail": b"retail fixture", "forever": b"forever fixture"}
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            existing = PACKAGE.write_archive(b"existing", "forever", "1.2.3", output)
+            with self.assertRaises(FileExistsError):
+                PACKAGE.write_archives(archives, "1.2.3", output)
+            self.assertEqual(list(output.iterdir()), [existing])
+            self.assertEqual(existing.read_bytes(), b"existing")
+        with tempfile.TemporaryDirectory() as directory:
+            written = PACKAGE.write_archives(archives, "1.2.3", Path(directory))
+            self.assertEqual({flavor: path.read_bytes() for flavor, path in written.items()}, archives)
 
     def test_changed_font_binary_hash_is_rejected(self):
         # No source file is modified: simulate one failed binary digest.
@@ -174,7 +205,7 @@ class PackageTests(unittest.TestCase):
                 PACKAGE.archive_bytes("retail", "0.0.0", fixture=True)
 
     def test_source_mutation_during_package_is_rejected(self):
-        # Simulate an external edit between snapshotting and final byte readback.
+        # Simulate an external edit while both archives are built from the snapshot.
         # Mutating an in-memory reader keeps the real checkout untouched.
         original_file = PACKAGE.safe_file
         original_close = zipfile.ZipFile.close
@@ -191,7 +222,7 @@ class PackageTests(unittest.TestCase):
             original_close(archive)
             compressed = True
         with patch.object(PACKAGE, "safe_file", side_effect=source), patch.object(zipfile.ZipFile, "close", close), self.assertRaisesRegex(ValueError, "Source changed during packaging"):
-            PACKAGE.archive_bytes("retail", "0.0.0", fixture=True)
+            PACKAGE.archive_set(("retail", "forever"), "0.0.0", fixture=True)
 
 
 if __name__ == "__main__":
