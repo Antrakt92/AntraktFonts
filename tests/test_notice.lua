@@ -227,6 +227,27 @@ end
 do
     local _, load = environment()
     local coordinator = load().GetCoordinator()
+    local old, replacement = participant(), participant()
+    coordinator:Register("A", old:callbacks()); coordinator:RequestShow()
+    local staleAck, staleRelease, reentrant
+    old.onDismiss = function()
+        staleAck, staleRelease, reentrant = old.confirm(), old.suspend(), coordinator:RequestInfo("A")
+        error("cleanup failed after the window was hidden")
+    end
+    check(coordinator:Register("A", replacement:callbacks()), "replacement registration contains cleanup failure")
+    check(staleAck == false, "a programmatically dismissed window cannot acknowledge")
+    check(staleRelease == false, "synchronous OnHide cannot release another presentation")
+    check(reentrant == false, "programmatic cleanup blocks reentrant presentation")
+    check(not old.visible and old.writes == 0, "a hidden window does not acknowledge on cleanup failure")
+    check(coordinator:RequestInfo("A") and replacement.shows == 1,
+        "a cleanup failure after hiding does not leave the old window busy")
+    check(not old.confirm() and not old.suspend(), "old callbacks cannot affect the replacement")
+    check(replacement.confirm() and replacement.writes == 1, "the replacement can acknowledge normally")
+end
+
+do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
     local visible, known = participant(), participant("acknowledged")
     visible.dismissError, visible.writeError = true, true
     coordinator:Register("A", visible:callbacks()); coordinator:RequestShow()
