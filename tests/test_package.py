@@ -32,7 +32,7 @@ class PackageTests(unittest.TestCase):
     def test_deterministic_exact_client_inventory_and_metadata(self):
         for flavor, (data, receipt) in self.packages.items():
             with self.subTest(flavor=flavor), zipfile.ZipFile(io.BytesIO(data)) as archive:
-                expected = {"AntraktFonts/" + name for name in PACKAGE.inventory()}
+                expected = {"AntraktFonts/" + name for name in PACKAGE.read_inventory()}
                 expected.add("AntraktFonts/AntraktFonts.toc")
                 self.assertEqual(set(archive.namelist()), expected)
                 self.assertEqual(len(archive.namelist()), len(expected))
@@ -59,7 +59,7 @@ class PackageTests(unittest.TestCase):
                 print("Fixture-only archive " + json.dumps(receipt, sort_keys=True))
 
     def test_archive_binaries_and_licenses_match_source(self):
-        manifest = json.loads((ROOT / "catalog/fonts.json").read_text())
+        manifest = json.loads((ROOT / "catalog/fonts.json").read_text(encoding="utf-8"))
         for data, _ in self.packages.values():
             with zipfile.ZipFile(io.BytesIO(data)) as archive:
                 for font in manifest["fonts"]:
@@ -114,6 +114,7 @@ class PackageTests(unittest.TestCase):
             "## Dependencies: StatsPro",
             "## RequiredDeps: DoYouNeedIt",
             "## RequiredDependencies: StatsPro",
+            "## LoadOnDemand: 1",
         ):
             class MutatedToc:
                 def read_bytes(self):
@@ -145,7 +146,32 @@ class PackageTests(unittest.TestCase):
                 return "0" * 64
             return original(data)
         with patch.object(PACKAGE, "sha", side_effect=mutate), self.assertRaises(ValueError):
-            PACKAGE.inventory()
+            PACKAGE.read_inventory()
+
+    def test_font_changed_after_digest_check_cannot_enter_archive(self):
+        original = PACKAGE.safe_file
+        font_path = "fonts/DejaVuSans.ttf"
+        reads = 0
+
+        class ChangingFont:
+            def read_bytes(self):
+                nonlocal reads
+                reads += 1
+                data = (ROOT / font_path).read_bytes()
+                return data if reads == 1 else data + b"modified"
+
+        def source(root, relative):
+            return ChangingFont() if relative == font_path else original(root, relative)
+
+        with patch.object(PACKAGE, "safe_file", side_effect=source), self.assertRaises(ValueError):
+            PACKAGE.archive_bytes("retail", "0.0.0", fixture=True)
+
+    def test_archive_requires_every_toc_load_target(self):
+        snapshots = PACKAGE.read_inventory()
+        del snapshots["libs/LibStub/LibStub.lua"]
+        with patch.object(PACKAGE, "read_inventory", return_value=snapshots):
+            with self.assertRaisesRegex(ValueError, "TOC references missing archive file"):
+                PACKAGE.archive_bytes("retail", "0.0.0", fixture=True)
 
     def test_source_mutation_during_package_is_rejected(self):
         # Simulate an external edit between snapshotting and final byte readback.

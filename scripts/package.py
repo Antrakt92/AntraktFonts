@@ -53,7 +53,7 @@ def validate_version(version: str, fixture: bool = False) -> None:
         raise ValueError("0.0.0 is reserved for disposable package fixtures")
 
 
-def validate_toc(text: str, flavor: str, interface: str) -> None:
+def validate_toc(text: str, flavor: str, interface: str) -> list[str]:
     headers: dict[str, list[str]] = {}
     entries = []
     for line in text.splitlines():
@@ -76,7 +76,7 @@ def validate_toc(text: str, flavor: str, interface: str) -> None:
             raise ValueError(f"TOC requires one matching {key} header")
     for key in (
         "savedvariables", "savedvariablespercharacter", "dependencies",
-        "requireddeps", "requireddependencies",
+        "requireddeps", "requireddependencies", "loadondemand",
     ):
         if key in headers:
             raise ValueError(f"Stateless independent provider forbids TOC header: {key}")
@@ -84,34 +84,40 @@ def validate_toc(text: str, flavor: str, interface: str) -> None:
         raise ValueError("TOC version placeholder must occur exactly once")
     if entries != ["libs/LibStub/LibStub.lua", "libs/CallbackHandler-1.0/CallbackHandler-1.0.lua", "libs/LibSharedMedia-3.0/LibSharedMedia-3.0.lua", "AntraktFonts_Catalog.lua", "AntraktFonts.lua"]:
         raise ValueError("Unexpected TOC load order or runtime file")
+    return entries
 
 
-def inventory(root: Path = ROOT) -> dict[str, str]:
-    """Return exact archive-relative -> source-relative paths, excluding the TOC."""
-    font_manifest = json.loads(safe_file(root, "catalog/fonts.json").read_text())
-    lib_manifest = json.loads(safe_file(root, "catalog/libraries.json").read_text())
+def read_inventory(root: Path = ROOT) -> dict[str, bytes]:
+    """Read and validate the exact bytes to archive, excluding the client TOC."""
+    font_manifest = json.loads(safe_file(root, "catalog/fonts.json").read_text(encoding="utf-8"))
+    lib_manifest = json.loads(safe_file(root, "catalog/libraries.json").read_text(encoding="utf-8"))
     if font_manifest["schemaVersion"] != 1 or lib_manifest["schemaVersion"] != 1:
         raise ValueError("Unsupported package source manifest")
-    paths = {name: name for name in ("AntraktFonts.lua", "AntraktFonts_Catalog.lua", "LICENSE", "THIRD-PARTY-NOTICES.md", "CHANGELOG.md", "media/antrakt-fonts-addon.png")}
-    notice = safe_file(root, "THIRD-PARTY-NOTICES.md").read_text(encoding="utf-8")
+    snapshots = {}
+
+    def snapshot(path: str) -> bytes:
+        if path not in snapshots:
+            snapshots[path] = safe_file(root, path).read_bytes()
+        return snapshots[path]
+
+    for path in ("AntraktFonts.lua", "AntraktFonts_Catalog.lua", "LICENSE", "THIRD-PARTY-NOTICES.md", "CHANGELOG.md", "media/antrakt-fonts-addon.png"):
+        snapshot(path)
+    notice = snapshots["THIRD-PARTY-NOTICES.md"].decode("utf-8")
     for font in font_manifest["fonts"]:
         for path in (font["path"], font["licenseFile"]):
-            paths[path] = path
             if path not in notice:
                 raise ValueError(f"Missing font notice: {path}")
-        if sha(safe_file(root, font["path"]).read_bytes()).upper() != font["sha256"]:
+        if sha(snapshot(font["path"])).upper() != font["sha256"]:
             raise ValueError(f"Changed font binary: {font['path']}")
-        if normalized_text_hash(safe_file(root, font["licenseFile"]).read_bytes()).upper() != font["licenseSha256"]:
+        if normalized_text_hash(snapshot(font["licenseFile"])).upper() != font["licenseSha256"]:
             raise ValueError(f"Changed font license: {font['licenseFile']}")
     for lib in lib_manifest["libraries"]:
-        paths[lib["Path"]] = lib["Path"]
-        if normalized_text_hash(safe_file(root, lib["Path"]).read_bytes()).upper() != lib["RuntimeSha256"]:
+        if normalized_text_hash(snapshot(lib["Path"])).upper() != lib["RuntimeSha256"]:
             raise ValueError(f"Changed bundled library: {lib['Path']}")
         if lib["Path"] not in notice:
             raise ValueError(f"Missing library notice: {lib['Path']}")
         if lib["LicenseFile"]:
-            paths[lib["LicenseFile"]] = lib["LicenseFile"]
-            if normalized_text_hash(safe_file(root, lib["LicenseFile"]).read_bytes()).upper() != lib["LicenseTextSha256"]:
+            if normalized_text_hash(snapshot(lib["LicenseFile"])).upper() != lib["LicenseTextSha256"]:
                 raise ValueError(f"Changed library license: {lib['LicenseFile']}")
         for key, value in lib.items():
             if value and key != "Path" and value not in notice:
@@ -127,11 +133,9 @@ def inventory(root: Path = ROOT) -> dict[str, str]:
                     raise ValueError(f"Reparse point in asset tree: {path.relative_to(root)}")
             for name in files:
                 relative = (Path(current) / name).relative_to(root).as_posix()
-                if relative not in paths:
+                if relative not in snapshots:
                     raise ValueError(f"Unexpected asset: {relative}")
-    for source in paths.values():
-        safe_file(root, source)
-    return paths
+    return snapshots
 
 
 def archive_bytes(flavor: str, version: str, *, fixture: bool = False, root: Path = ROOT) -> tuple[bytes, dict]:
@@ -141,15 +145,19 @@ def archive_bytes(flavor: str, version: str, *, fixture: bool = False, root: Pat
     spec = importlib.util.spec_from_file_location("antrakt_generate", root / "tools/generate.py")
     generator = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(generator)
-    for path, expected in generator.outputs().items():
-        if safe_file(root, path.relative_to(root).as_posix()).read_bytes() != expected:
-            raise ValueError(f"Generated source differs: {path.relative_to(root)}")
+    generated = generator.outputs()
     toc_source, interface = FLAVORS[flavor]
-    paths = inventory(root)
-    paths["AntraktFonts.toc"] = toc_source
-    snapshots = {archive: safe_file(root, source).read_bytes() for archive, source in paths.items()}
+    snapshots = read_inventory(root)
+    for path, expected in generated.items():
+        relative = path.relative_to(root).as_posix()
+        actual = snapshots[relative] if relative in snapshots else safe_file(root, relative).read_bytes()
+        if actual != expected:
+            raise ValueError(f"Generated source differs: {relative}")
+    snapshots["AntraktFonts.toc"] = safe_file(root, toc_source).read_bytes()
     text = snapshots["AntraktFonts.toc"].decode("utf-8")
-    validate_toc(text, flavor, interface)
+    for entry in validate_toc(text, flavor, interface):
+        if entry not in snapshots:
+            raise ValueError(f"TOC references missing archive file: {entry}")
     if not fixture and not re.search(r"^## " + re.escape(version) + r"(?:\s|$)", snapshots["CHANGELOG.md"].decode(), re.MULTILINE):
         raise ValueError("Prepare the matching cumulative changelog before a release archive")
     source_receipt = sha(json.dumps({archive: sha(data) for archive, data in sorted(snapshots.items())}, sort_keys=True, separators=(",", ":")).encode())
@@ -162,9 +170,10 @@ def archive_bytes(flavor: str, version: str, *, fixture: bool = False, root: Pat
             entry.external_attr = 0o100644 << 16
             entry.compress_type = zipfile.ZIP_DEFLATED
             archive.writestr(entry, data, compresslevel=6)
-    for archive, source in paths.items():
+    for archive, data in snapshots.items():
+        source = toc_source if archive == "AntraktFonts.toc" else archive
         current = safe_file(root, source).read_bytes()
-        expected = text.encode() if archive == "AntraktFonts.toc" else snapshots[archive]
+        expected = text.encode() if archive == "AntraktFonts.toc" else data
         if current != expected:
             raise ValueError(f"Source changed during packaging: {source}")
     data = output.getvalue()
