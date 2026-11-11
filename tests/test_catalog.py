@@ -60,6 +60,41 @@ class CatalogTests(unittest.TestCase):
             self.assertEqual(GENERATOR.sha((ROOT / "consumer" / name).read_bytes()), digest)
         self.assertEqual(exported["catalogRevision"], self.contract["catalogRevision"])
 
+    def test_collection_cannot_reuse_the_baseline_id(self):
+        source = copy.deepcopy(self.source)
+        source["fonts"][0]["id"] = self.contract["baseline"]["id"]
+        read_json = GENERATOR.read_json
+
+        def read_with_conflict(path):
+            return source if path == "catalog/fonts.json" else read_json(path)
+
+        with patch.object(GENERATOR, "read_json", side_effect=read_with_conflict):
+            with self.assertRaisesRegex(ValueError, "Reserved baseline font ID"):
+                GENERATOR.build_contract()
+
+    def test_collection_cannot_reuse_the_baseline_filename(self):
+        source = copy.deepcopy(self.source)
+        original_path = ROOT / source["fonts"][0]["path"]
+        source["fonts"][0]["path"] = "fonts/ANTRAKTUISANS.ttf"
+        colliding_path = ROOT / source["fonts"][0]["path"]
+        read_json, read_bytes = GENERATOR.read_json, Path.read_bytes
+        receipt = read_json("catalog/import-receipt.json")
+        reviewed = {**source, "fonts": [{k: v for k, v in row.items() if k != "id"} for row in source["fonts"]]}
+        receipt["canonicalManifestSha256WithoutAddedIds"] = GENERATOR.sha(GENERATOR.canonical(reviewed))
+
+        replacements = {"catalog/fonts.json": source, "catalog/import-receipt.json": receipt}
+
+        def read_with_conflict(path):
+            return replacements[path] if path in replacements else read_json(path)
+
+        def read_relocated_font(path):
+            return read_bytes(original_path if path == colliding_path else path)
+
+        with (patch.object(GENERATOR, "read_json", side_effect=read_with_conflict),
+              patch.object(Path, "read_bytes", read_relocated_font),
+              self.assertRaisesRegex(ValueError, "Reserved baseline font filename")):
+            GENERATOR.build_contract()
+
     def test_original_inventory_and_declared_hashes_are_preserved(self):
         fonts = self.source["fonts"]
         self.assertEqual(len(fonts), 46)

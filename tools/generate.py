@@ -14,6 +14,8 @@ LOCALES = {"enUS", "deDE", "esES", "esMX", "frFR", "itIT", "koKR", "ptBR", "ruRU
 WESTERN_LOCALES = LOCALES - {"koKR", "ruRU", "zhCN", "zhTW"}
 GLYPH_FIELDS = ("latin", "cyrillic", "hans", "hant", "hangul", "japanese")
 LEGACY_ADDONS = ("StatsPro", "DoYouNeedIt")
+BASELINE_ID = "antrakt-ui-sans"
+BASELINE_FILENAME = "AntraktUISans.ttf"
 MESSAGE_KEYS = {
     "title", "missing", "ready", "settingsMissing", "selectedMissing", "disabled", "notLoaded",
     "incompatible", "assetUnavailable", "details", "gotIt", "copyLink",
@@ -57,8 +59,12 @@ def build_contract() -> dict:
         filename = font["path"].removeprefix("fonts/")
         if not clean_text(identity, 64) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", identity):
             raise ValueError("Invalid stable font ID")
+        if identity == BASELINE_ID:
+            raise ValueError(f"Reserved baseline font ID: {identity}")
         if len(filename) > 128 or not re.fullmatch(r"[A-Za-z0-9_.-]+\.(ttf|otf)", filename) or font["path"] != "fonts/" + filename:
             raise ValueError("Invalid font file path")
+        if filename.lower() == BASELINE_FILENAME.lower():
+            raise ValueError(f"Reserved baseline font filename: {filename}")
         if not clean_text(font["name"], 128) or len(font["name"].encode("utf-8")) > 128:
             raise ValueError("Invalid font name")
         if identity in identities or filename.lower() in filenames or font["name"] in names:
@@ -137,15 +143,15 @@ def build_contract() -> dict:
         if url.scheme != "https" or url.netloc not in hosts or url.username or url.password or url.query or url.fragment or not re.fullmatch(pattern, url.path):
             raise ValueError(f"Invalid distribution link: {service}")
     baseline = read_json("baseline/build.json")
-    if sha((ROOT / "baseline/AntraktUISans.ttf").read_bytes()) != baseline["sha256"]:
+    if sha((ROOT / "baseline" / BASELINE_FILENAME).read_bytes()) != baseline["sha256"]:
         raise ValueError("Baseline differs from its pinned build receipt")
     contract = {
         "formatMajor": 1,
         "fonts": records,
         "retiredFonts": retired,
         "baseline": {
-            "id": "antrakt-ui-sans", "name": baseline["family"],
-            "file": "AntraktUISans.ttf", "sha256": baseline["sha256"],
+            "id": BASELINE_ID, "name": baseline["family"],
+            "file": BASELINE_FILENAME, "sha256": baseline["sha256"],
             **{key: True for key in GLYPH_FIELDS},
         },
         "campaign": message_source["campaign"],
