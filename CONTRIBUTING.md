@@ -34,7 +34,10 @@ build both ZIPs from one source snapshot and report their SHA-256 digests
 together. The requested version must match the first release heading in
 `CHANGELOG.md`. Select it from the full unreleased range before preparing a release.
 Source TOCs retain `@project-version@`. The packager leaves source files untouched
-and refuses to overwrite an archive.
+and refuses to overwrite an archive. It stages the ZIP bytes before making each
+file available under its final name. A repeated `--flavor both` run can reuse
+an existing archive if it matches the rebuilt bytes exactly. If a paired build
+fails during publication, any complete files already written stay in place.
 
 For a release handoff, run the paired build from an export of the reviewed Git
 commit. Record that commit's SHA alongside the build's JSON output.

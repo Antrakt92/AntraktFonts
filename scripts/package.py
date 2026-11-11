@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import ExitStack
+from collections.abc import Callable
 import hashlib
 import importlib.util
 import io
@@ -12,6 +12,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
+from tempfile import TemporaryDirectory
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -90,17 +91,20 @@ def validate_toc(text: str, flavor: str, interface: str) -> list[str]:
     return entries
 
 
-def read_inventory(root: Path = ROOT) -> dict[str, bytes]:
+def read_inventory(root: Path = ROOT, *, read_source: Callable[[str], bytes] | None = None) -> dict[str, bytes]:
     """Read and validate the exact bytes to archive, excluding the client TOC."""
-    font_manifest = json.loads(safe_file(root, "catalog/fonts.json").read_text(encoding="utf-8"))
-    lib_manifest = json.loads(safe_file(root, "catalog/libraries.json").read_text(encoding="utf-8"))
+    def read(path: str) -> bytes:
+        return read_source(path) if read_source is not None else safe_file(root, path).read_bytes()
+
+    font_manifest = json.loads(read("catalog/fonts.json").decode("utf-8"))
+    lib_manifest = json.loads(read("catalog/libraries.json").decode("utf-8"))
     if font_manifest["schemaVersion"] != 1 or lib_manifest["schemaVersion"] != 1:
         raise ValueError("Unsupported package source manifest")
     snapshots = {}
 
     def snapshot(path: str) -> bytes:
         if path not in snapshots:
-            snapshots[path] = safe_file(root, path).read_bytes()
+            snapshots[path] = read(path)
         return snapshots[path]
 
     for path in ("AntraktFonts.lua", "AntraktFonts_Catalog.lua", "LICENSE", "THIRD-PARTY-NOTICES.md", "CHANGELOG.md", "media/antrakt-fonts-addon.png"):
@@ -150,23 +154,30 @@ def archive_set(
     spec = importlib.util.spec_from_file_location("antrakt_generate", root / "tools/generate.py")
     generator = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(generator)
-    generated = generator.outputs()
-    snapshots = read_inventory(root)
+    source_snapshot = {}
+
+    def read_source(path: str) -> bytes:
+        if path not in source_snapshot:
+            source_snapshot[path] = safe_file(root, path).read_bytes()
+        return source_snapshot[path]
+
+    generated = generator.outputs(read_source)
+    snapshots = read_inventory(root, read_source=read_source)
     for path, expected in generated.items():
         relative = path.relative_to(root).as_posix()
-        actual = snapshots[relative] if relative in snapshots else safe_file(root, relative).read_bytes()
+        actual = read_source(relative)
         if actual != expected:
             raise ValueError(f"Generated source differs: {relative}")
     if not fixture:
         heading = re.search(r"^##[ \t]+([^\r\n]+)", snapshots["CHANGELOG.md"].decode("utf-8"), re.MULTILINE)
         if not heading or not re.fullmatch(re.escape(version) + r"(?: - .+)?", heading[1]):
             raise ValueError("Requested version must match the first release heading in CHANGELOG.md")
-    tocs = {FLAVORS[flavor][0]: safe_file(root, FLAVORS[flavor][0]).read_bytes() for flavor in flavors}
+    tocs = {FLAVORS[flavor][0]: read_source(FLAVORS[flavor][0]) for flavor in flavors}
     archives = {
         flavor: build_archive(flavor, version, fixture, snapshots, tocs[FLAVORS[flavor][0]])
         for flavor in flavors
     }
-    for source, expected in {**snapshots, **tocs}.items():
+    for source, expected in source_snapshot.items():
         if safe_file(root, source).read_bytes() != expected:
             raise ValueError(f"Source changed during packaging: {source}")
     return archives
@@ -199,6 +210,15 @@ def archive_bytes(flavor: str, version: str, *, fixture: bool = False, root: Pat
     return archive_set((flavor,), version, fixture=fixture, root=root)[flavor]
 
 
+def archive_matches(target: Path, data: bytes, info: os.stat_result) -> bool:
+    return (
+        stat.S_ISREG(info.st_mode)
+        and not getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+        and info.st_size == len(data)
+        and target.read_bytes() == data
+    )
+
+
 def write_archives(archives: dict[str, bytes], version: str, output: Path) -> dict[str, Path]:
     validate_version(version)
     if not archives or any(flavor not in FLAVORS for flavor in archives):
@@ -211,22 +231,36 @@ def write_archives(archives: dict[str, bytes], version: str, output: Path) -> di
                 raise ValueError("Output directory contains a reparse point")
     output.mkdir(parents=True, exist_ok=True)
     targets = {flavor: output / f"AntraktFonts-{version}-{flavor}.zip" for flavor in archives}
-    for target in targets.values():
+    pending = {}
+    for flavor, target in targets.items():
         if not target.resolve().is_relative_to(output.resolve()):
             raise ValueError("Archive target escapes output directory")
-    created = []
-    try:
-        with ExitStack() as stack:
-            streams = {}
-            for flavor, target in targets.items():
-                streams[flavor] = stack.enter_context(target.open("xb"))
-                created.append(target)
-            for flavor, data in archives.items():
-                streams[flavor].write(data)
-    except BaseException:
-        for target in created:
-            target.unlink(missing_ok=True)
-        raise
+        try:
+            existing = target.lstat()
+        except FileNotFoundError:
+            pending[flavor] = target
+            continue
+        if len(archives) == 1 or not archive_matches(target, archives[flavor], existing):
+            raise FileExistsError(f"Archive already exists: {target}")
+    if pending:
+        with TemporaryDirectory(prefix=".antraktfonts-", dir=output) as directory:
+            staged = {}
+            for flavor, target in pending.items():
+                path = Path(directory) / (target.name + ".part")
+                with path.open("xb") as stream:
+                    stream.write(archives[flavor])
+                staged[flavor] = path
+            # Leave complete outputs in place on error. A retry can reuse their exact bytes.
+            for flavor, target in pending.items():
+                # Windows rename is exclusive. POSIX rename would replace a competing file.
+                if os.name == "nt":
+                    staged[flavor].rename(target)
+                else:
+                    os.link(staged[flavor], target)
+    if len(archives) > 1:
+        for flavor, target in targets.items():
+            if not archive_matches(target, archives[flavor], target.lstat()):
+                raise ValueError(f"Archive changed during publication: {target}")
     return targets
 
 

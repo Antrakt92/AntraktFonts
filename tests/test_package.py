@@ -9,7 +9,7 @@ import stat
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +23,7 @@ class PackageTests(unittest.TestCase):
     def setUpClass(cls):
         with patch.object(PACKAGE, "read_inventory", wraps=PACKAGE.read_inventory) as capture:
             cls.packages = PACKAGE.archive_set(tuple(PACKAGE.FLAVORS), "0.0.0", fixture=True)
-            capture.assert_called_once_with(ROOT)
+            capture.assert_called_once_with(ROOT, read_source=ANY)
         for flavor, (first, receipt) in cls.packages.items():
             second, second_receipt = PACKAGE.archive_bytes(flavor, "0.0.0", fixture=True)
             if first != second or receipt != second_receipt:
@@ -166,6 +166,93 @@ class PackageTests(unittest.TestCase):
             written = PACKAGE.write_archives(archives, "1.2.3", Path(directory))
             self.assertEqual({flavor: path.read_bytes() for flavor, path in written.items()}, archives)
 
+    def test_pair_writes_do_not_expose_unfinished_archives(self):
+        archives = {"retail": b"retail fixture", "forever": b"forever fixture"}
+        original_open = Path.open
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+
+            def observed_open(path, mode="r", *args, **kwargs):
+                if "x" in mode:
+                    self.assertFalse(list(output.glob("*.zip")), "a final ZIP is visible before the write completed")
+                    self.assertNotEqual(path.parent, output, "archive bytes must be staged before publication")
+                return original_open(path, mode, *args, **kwargs)
+
+            with patch.object(Path, "open", observed_open):
+                written = PACKAGE.write_archives(archives, "1.2.3", output)
+            self.assertEqual({flavor: path.read_bytes() for flavor, path in written.items()}, archives)
+
+    def test_pair_resumes_from_an_identical_completed_archive(self):
+        archives = {"retail": b"retail fixture", "forever": b"forever fixture"}
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            existing = PACKAGE.write_archive(archives["retail"], "retail", "1.2.3", output)
+            original_stat = existing.stat()
+            written = PACKAGE.write_archives(archives, "1.2.3", output)
+            self.assertEqual({flavor: path.read_bytes() for flavor, path in written.items()}, archives)
+            self.assertTrue(os.path.samestat(original_stat, existing.stat()))
+
+    def test_pair_rechecks_a_reused_archive_after_publishing_its_peer(self):
+        archives = {"retail": b"retail fixture", "forever": b"forever fixture"}
+        operation = "rename" if os.name == "nt" else "link"
+        promote = getattr(os, operation)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            existing = PACKAGE.write_archive(archives["retail"], "retail", "1.2.3", output)
+
+            def publish(source, target, *args, **kwargs):
+                result = promote(source, target, *args, **kwargs)
+                existing.write_bytes(b"edited fixture")
+                return result
+
+            with patch.object(os, operation, side_effect=publish):
+                with self.assertRaisesRegex(ValueError, "Archive changed during publication"):
+                    PACKAGE.write_archives(archives, "1.2.3", output)
+            self.assertEqual(existing.read_bytes(), b"edited fixture")
+            self.assertEqual((output / "AntraktFonts-1.2.3-forever.zip").read_bytes(), archives["forever"])
+
+    def test_pair_publish_collision_preserves_complete_outputs(self):
+        archives = {"retail": b"retail fixture", "forever": b"forever fixture"}
+        operation = "rename" if os.name == "nt" else "link"
+        promote = getattr(os, operation)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            competitor = output / "AntraktFonts-1.2.3-forever.zip"
+
+            def publish(source, target, *args, **kwargs):
+                if Path(target) == competitor:
+                    competitor.write_bytes(b"competing archive")
+                return promote(source, target, *args, **kwargs)
+
+            with patch.object(os, operation, side_effect=publish):
+                with self.assertRaises(FileExistsError):
+                    PACKAGE.write_archives(archives, "1.2.3", output)
+            self.assertEqual((output / "AntraktFonts-1.2.3-retail.zip").read_bytes(), archives["retail"])
+            self.assertEqual(competitor.read_bytes(), b"competing archive")
+
+    def test_pair_publish_collision_preserves_a_replaced_first_output(self):
+        archives = {"retail": b"retail fixture", "forever": b"forever fixture"}
+        operation = "rename" if os.name == "nt" else "link"
+        promote = getattr(os, operation)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            retail = output / "AntraktFonts-1.2.3-retail.zip"
+            forever = output / "AntraktFonts-1.2.3-forever.zip"
+
+            def publish(source, target, *args, **kwargs):
+                if Path(target) == forever:
+                    replacement = output / "replacement"
+                    replacement.write_bytes(b"replaced archive")
+                    replacement.replace(retail)
+                    forever.write_bytes(b"competing archive")
+                return promote(source, target, *args, **kwargs)
+
+            with patch.object(os, operation, side_effect=publish):
+                with self.assertRaises(FileExistsError):
+                    PACKAGE.write_archives(archives, "1.2.3", output)
+            self.assertEqual(retail.read_bytes(), b"replaced archive")
+            self.assertEqual(forever.read_bytes(), b"competing archive")
+
     def test_changed_font_binary_hash_is_rejected(self):
         # No source file is modified: simulate one failed binary digest.
         original = PACKAGE.sha
@@ -223,6 +310,26 @@ class PackageTests(unittest.TestCase):
             compressed = True
         with patch.object(PACKAGE, "safe_file", side_effect=source), patch.object(zipfile.ZipFile, "close", close), self.assertRaisesRegex(ValueError, "Source changed during packaging"):
             PACKAGE.archive_set(("retail", "forever"), "0.0.0", fixture=True)
+
+    def test_provenance_input_drift_during_pair_is_rejected(self):
+        read_bytes = Path.read_bytes
+        original_build = PACKAGE.build_archive
+        compressed = False
+        receipt = ROOT / "catalog/import-receipt.json"
+
+        def read(path):
+            data = read_bytes(path)
+            return b"{}" if compressed and path == receipt else data
+
+        def build(*args):
+            nonlocal compressed
+            result = original_build(*args)
+            compressed = True
+            return result
+
+        with patch.object(Path, "read_bytes", read), patch.object(PACKAGE, "build_archive", build):
+            with self.assertRaisesRegex(ValueError, "Source changed during packaging: catalog/import-receipt.json"):
+                PACKAGE.archive_set(("retail", "forever"), "0.0.0", fixture=True)
 
 
 if __name__ == "__main__":
