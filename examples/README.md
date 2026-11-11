@@ -18,6 +18,10 @@ Do not replace another addon's registration or set LSM's global/default font.
 The first owner of a name wins. A same-name third-party font is a valid LSM choice,
 but does not identify a particular Antrakt Fonts file. Libraries register fonts
 for the client locale; a different output language needs your own filtering.
+The library list uses script coverage and retains existing registration names.
+For example, the Traditional Chinese client can list both CN and TW Source Han
+faces. A catalog-based picker can restrict its choices to the matching regional
+forms using the `region` field.
 
 ## Catalog route for an exact file or a custom picker
 

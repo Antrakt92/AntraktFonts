@@ -20,7 +20,7 @@ local function load(env, path)
     return chunk("AntraktFonts", {})
 end
 
-local function client(locale, missing, occupied)
+local function client(locale, missing, occupied, expectedCount)
     local env = setmetatable({}, { __index = _G })
     env._G = env
     env.getfenv = function() return env end
@@ -60,17 +60,25 @@ local function client(locale, missing, occupied)
     end
     check(media:GetDefault("font") == previousDefault, "provider does not change the media default")
     check(media:GetGlobal("font") == previousGlobal, "provider does not change global overrides")
-    if occupied or missing then check(registrations == 0, "no invented registration callback") end
+    check(registrations == (not missing and not occupied and expectedCount or 0),
+        "expected number of new registrations for " .. locale)
+    if not occupied and not missing and locale == "zhTW" then
+        for _, name in ipairs({ "Source Han Sans CN", "Source Han Sans TW", "Source Han Serif CN", "Source Han Serif TW" }) do
+            check(paths[name] ~= nil, "standard LSM keeps both regional forms on zhTW: " .. name)
+        end
+    end
     check(#env.AntraktFonts.GetCatalog().fonts == 46, "metadata remains available without new registrations")
 end
 
-for _, flavor in ipairs({ "retail", "forever" }) do
-    for _, locale in ipairs({ "enUS", "deDE", "frFR", "ptBR", "ruRU", "zhCN", "zhTW", "koKR" }) do
-        client(locale, false, false)
-        client(locale, false, true)
-        client(locale, true, false)
-    end
-    check(flavor ~= nil, "both client build scenarios run")
+-- Both archive flavors ship this same runtime. Package tests check each TOC.
+local locales = {
+    { "enUS", 46 }, { "deDE", 41 }, { "esES", 41 }, { "esMX", 41 }, { "frFR", 41 },
+    { "itIT", 40 }, { "ptBR", 40 }, { "ruRU", 35 }, { "zhCN", 4 }, { "zhTW", 4 }, { "koKR", 2 },
+}
+for _, locale in ipairs(locales) do
+    client(locale[1], false, false, locale[2])
+    client(locale[1], false, true, locale[2])
+    client(locale[1], true, false, locale[2])
 end
 
 local withoutLibrary = setmetatable({}, { __index = _G })
