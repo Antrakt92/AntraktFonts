@@ -434,4 +434,51 @@ for _,state in ipairs({"fresh","acknowledged"}) do
     check(not staleConfirm() and not staleSuspend() and manual.writes==0,"same-owner replacement invalidates old manual callbacks without acknowledgement: "..state)
     check(coordinator:RequestInfo("A") and manual.shows==2,"replacement owner can open current manual information: "..state)
 end
+for _, manual in ipairs({ false, true }) do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local old, replacement = participant(), participant()
+    local callbacks = old:callbacks()
+    callbacks.canShow = function()
+        coordinator:Register("A", replacement:callbacks())
+        return true
+    end
+    coordinator:Register("A", callbacks)
+    local request = manual and function() return coordinator:RequestInfo("A") end
+        or function() return coordinator:RequestShow() end
+    check(not request() and old.shows == 0, "replaced readiness cannot open a stale host")
+    check(request() and replacement.shows == 1, "current registration can open on the next request")
+end
+
+do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local old, replacement = participant(), participant()
+    local callbacks = old:callbacks()
+    local show = callbacks.show
+    callbacks.show = function(confirm, suspend)
+        coordinator:Register("A", replacement:callbacks())
+        return show(confirm, suspend)
+    end
+    coordinator:Register("A", callbacks)
+    check(not coordinator:RequestInfo("A"), "a host replaced while opening is dismissed")
+    check(not old.visible and not old.confirm(), "late visibility and acknowledgement cannot escape dismissal")
+    check(coordinator:RequestInfo("A") and replacement.shows == 1, "replacement can open after late dismissal")
+end
+
+do
+    local _, load = environment()
+    local coordinator = load().GetCoordinator()
+    local old, peer, acknowledged = participant(), participant(), participant("acknowledged")
+    old.durable, peer.durable = false, false
+    local callbacks = old:callbacks()
+    callbacks.canShow = function()
+        coordinator:Register("C", acknowledged:callbacks())
+        return false
+    end
+    coordinator:Register("A", callbacks)
+    coordinator:Register("B", peer:callbacks())
+    check(not coordinator:RequestShow() and peer.shows == 0, "readiness cannot bypass a late acknowledgement")
+end
+
 print("Notice coordinator: " .. checks .. " checks passed")
