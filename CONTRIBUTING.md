@@ -29,7 +29,7 @@ readable fallback.
 ## Local packages
 
 `python scripts/package.py --flavor retail --version <reviewed-version>` builds
-the Retail archive. Use `--flavor forever` for Forever beta or `--flavor both` to
+the Retail archive. Use `--flavor forever` for WoW Forever or `--flavor both` to
 build both ZIPs from one source snapshot and report their SHA-256 digests
 together. The requested version must match the first release heading in
 `CHANGELOG.md`. Select it from the full unreleased range before preparing a release.

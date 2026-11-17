@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 - 17-Nov-2026 — Retail and Forever packages
+
+- Update the Forever name in the in-game AddOns list.
+- Build both client archives from the same verified font and license files.
+
 ## 1.0.1 - 05-Nov-2026 — Shared downloads for both clients
 
 - Add the CurseForge download link used by compatible addons.
